@@ -9,10 +9,13 @@
 }
 
 :root {
-    --primary-color: #ffc608;
-    --secondary-color: #8d6fe3;
+    --primary-color: #fcff00;
+    --secondary-color: #6f7ce3;
 
     --background-color: white;
+    --dark-gray-color: #858585;
+    --gray-color: #5e5e5e;
+    --red-color: #fd0000;
 
 
     --small-space: calc(var(--space) / 2);
@@ -40,7 +43,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: white;
+    background-color: black;
 }
 
 .container {
@@ -58,7 +61,6 @@ body {
 button {
     border: 0;
     background-color: var(--primary-color);
-    border-radius: var(--small-space);
     padding: var(--small-space) var(--space);
 }
 

@@ -1,5 +1,10 @@
 module Overlay exposing (..)
 
+import Artefact exposing (Artefact)
+import Piece exposing (Piece)
+
 
 type Overlay
-    = GameMenu
+    = ShopOverlay { party : List Piece }
+    | FoundArtefactOverlay Artefact
+    | NewGame

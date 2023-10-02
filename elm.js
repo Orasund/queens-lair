@@ -4407,6 +4407,52 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+
+
+
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5195,8 +5241,17 @@ var $elm$core$Task$perform = F2(
 			$elm$core$Task$Perform(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
-var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Overlay$GameMenu = {$: 'GameMenu'};
+var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Main$GotSeed = function (a) {
+	return {$: 'GotSeed', a: a};
+};
+var $author$project$Piece$King = {$: 'King'};
+var $author$project$Overlay$NewGame = {$: 'NewGame'};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
+};
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
 		return {$: 'Seed', a: a, b: b};
@@ -5216,74 +5271,2134 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
-var $author$project$Game$new = {};
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$random$Random$init = A2(
+	$elm$core$Task$andThen,
+	function (time) {
+		return $elm$core$Task$succeed(
+			$elm$random$Random$initialSeed(
+				$elm$time$Time$posixToMillis(time)));
+	},
+	$elm$time$Time$now);
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return $elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _v1 = A2($elm$random$Random$step, generator, seed);
+			var value = _v1.a;
+			var newSeed = _v1.b;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2($elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var $elm$random$Random$onSelfMsg = F3(
+	function (_v0, _v1, seed) {
+		return $elm$core$Task$succeed(seed);
+	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$map = F2(
+	function (func, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v1 = genA(seed0);
+				var a = _v1.a;
+				var seed1 = _v1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var $elm$random$Random$cmdMap = F2(
+	function (func, _v0) {
+		var generator = _v0.a;
+		return $elm$random$Random$Generate(
+			A2($elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
+var $elm$random$Random$command = _Platform_leaf('Random');
+var $elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return $elm$random$Random$command(
+			$elm$random$Random$Generate(
+				A2($elm$random$Random$map, tagger, generator)));
+	});
+var $author$project$Piece$Pawn = {$: 'Pawn'};
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $author$project$Config$boardSize = 4;
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
+				return _Utils_Tuple2(
+					A2(func, a, b),
+					seed2);
+			});
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$singleton = F2(
+	function (key, value) {
+		return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+	});
+var $elm$core$Set$singleton = function (key) {
+	return $elm$core$Set$Set_elm_builtin(
+		A2($elm$core$Dict$singleton, key, _Utils_Tuple0));
+};
+var $author$project$Level$fromBoard = function (board) {
+	var randomPos = A3(
+		$elm$random$Random$map2,
+		$elm$core$Tuple$pair,
+		A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1),
+		A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1));
+	return A2(
+		$elm$random$Random$map,
+		function (loot) {
+			return {
+				board: board,
+				history: _List_Nil,
+				loot: $elm$core$Set$singleton(loot)
+			};
+		},
+		randomPos);
+};
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Piece$value = function (piece) {
+	var muliplier = 1;
+	return muliplier * function () {
+		switch (piece.$) {
+			case 'King':
+				return 20;
+			case 'Queen':
+				return 9;
+			case 'Rook':
+				return 5;
+			case 'Bishop':
+				return 3;
+			case 'Knight':
+				return 2;
+			default:
+				return 1;
+		}
+	}();
+};
+var $author$project$Level$fromPieces = function (args) {
+	var white = A3(
+		$elm$core$List$map2,
+		F2(
+			function (pos, piece) {
+				return _Utils_Tuple2(
+					pos,
+					{isWhite: true, piece: piece});
+			}),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(2, 3),
+				_Utils_Tuple2(1, 3),
+				_Utils_Tuple2(3, 3),
+				_Utils_Tuple2(0, 3),
+				_Utils_Tuple2(2, 2),
+				_Utils_Tuple2(1, 2),
+				_Utils_Tuple2(3, 2),
+				_Utils_Tuple2(0, 2)
+			]),
+		A2(
+			$elm$core$List$sortBy,
+			function (piece) {
+				return -$author$project$Piece$value(piece);
+			},
+			args.white));
+	var black = A3(
+		$elm$core$List$map2,
+		F2(
+			function (pos, piece) {
+				return _Utils_Tuple2(
+					pos,
+					{isWhite: false, piece: piece});
+			}),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(2, 0),
+				_Utils_Tuple2(1, 0),
+				_Utils_Tuple2(3, 0),
+				_Utils_Tuple2(0, 0),
+				_Utils_Tuple2(2, 1),
+				_Utils_Tuple2(1, 1),
+				_Utils_Tuple2(3, 1),
+				_Utils_Tuple2(0, 1)
+			]),
+		A2(
+			$elm$core$List$sortBy,
+			function (piece) {
+				return -$author$project$Piece$value(piece);
+			},
+			args.black));
+	return $author$project$Level$fromBoard(
+		$elm$core$Dict$fromList(
+			_Utils_ap(white, black)));
+};
+var $author$project$Piece$Bishop = {$: 'Bishop'};
+var $author$project$Piece$Knight = {$: 'Knight'};
+var $author$project$Piece$list = _List_fromArray(
+	[$author$project$Piece$King, $author$project$Piece$Bishop, $author$project$Piece$Knight, $author$project$Piece$Pawn]);
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$random$Random$float = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var seed1 = $elm$random$Random$next(seed0);
+				var range = $elm$core$Basics$abs(b - a);
+				var n1 = $elm$random$Random$peel(seed1);
+				var n0 = $elm$random$Random$peel(seed0);
+				var lo = (134217727 & n1) * 1.0;
+				var hi = (67108863 & n0) * 1.0;
+				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
+				var scaled = (val * range) + a;
+				return _Utils_Tuple2(
+					scaled,
+					$elm$random$Random$next(seed1));
+			});
+	});
+var $elm$random$Random$getByWeight = F3(
+	function (_v0, others, countdown) {
+		getByWeight:
+		while (true) {
+			var weight = _v0.a;
+			var value = _v0.b;
+			if (!others.b) {
+				return value;
+			} else {
+				var second = others.a;
+				var otherOthers = others.b;
+				if (_Utils_cmp(
+					countdown,
+					$elm$core$Basics$abs(weight)) < 1) {
+					return value;
+				} else {
+					var $temp$_v0 = second,
+						$temp$others = otherOthers,
+						$temp$countdown = countdown - $elm$core$Basics$abs(weight);
+					_v0 = $temp$_v0;
+					others = $temp$others;
+					countdown = $temp$countdown;
+					continue getByWeight;
+				}
+			}
+		}
+	});
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $elm$random$Random$weighted = F2(
+	function (first, others) {
+		var normalize = function (_v0) {
+			var weight = _v0.a;
+			return $elm$core$Basics$abs(weight);
+		};
+		var total = normalize(first) + $elm$core$List$sum(
+			A2($elm$core$List$map, normalize, others));
+		return A2(
+			$elm$random$Random$map,
+			A2($elm$random$Random$getByWeight, first, others),
+			A2($elm$random$Random$float, 0, total));
+	});
+var $author$project$Game$Generate$generateByLevel = F2(
+	function (lv, list) {
+		var choose = F2(
+			function (remaining, black) {
+				return A2(
+					$elm$random$Random$weighted,
+					_Utils_Tuple2(0, $author$project$Piece$Pawn),
+					A2(
+						$elm$core$List$filterMap,
+						function (piece) {
+							var value = $author$project$Piece$value(piece);
+							var amount = $elm$core$List$length(
+								A2(
+									$elm$core$List$filter,
+									$elm$core$Basics$eq(piece),
+									black));
+							return ((_Utils_cmp(value, remaining) < 1) && (_Utils_eq(piece, $author$project$Piece$Pawn) || (amount < 2))) ? $elm$core$Maybe$Just(
+								_Utils_Tuple2(value, piece)) : $elm$core$Maybe$Nothing;
+						},
+						$author$project$Piece$list));
+			});
+		return A2(
+			$elm$random$Random$andThen,
+			function (_v1) {
+				var black = _v1.black;
+				return $author$project$Level$fromPieces(
+					{black: black, white: list});
+			},
+			A3(
+				$elm$core$List$foldl,
+				function (_v0) {
+					return $elm$random$Random$andThen(
+						function (args) {
+							return (!args.remaining) ? $elm$random$Random$constant(args) : A2(
+								$elm$random$Random$map,
+								function (piece) {
+									return {
+										black: A2($elm$core$List$cons, piece, args.black),
+										remaining: args.remaining - $author$project$Piece$value(piece)
+									};
+								},
+								A2(choose, args.remaining, args.black));
+						});
+				},
+				$elm$random$Random$constant(
+					{black: _List_Nil, remaining: lv * 2}),
+				A2($elm$core$List$range, 0, 3)));
+	});
+var $elm$random$Random$map3 = F4(
+	function (func, _v0, _v1, _v2) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v3 = genA(seed0);
+				var a = _v3.a;
+				var seed1 = _v3.b;
+				var _v4 = genB(seed1);
+				var b = _v4.a;
+				var seed2 = _v4.b;
+				var _v5 = genC(seed2);
+				var c = _v5.a;
+				var seed3 = _v5.b;
+				return _Utils_Tuple2(
+					A3(func, a, b, c),
+					seed3);
+			});
+	});
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
+	function (seed0) {
+		var makeIndependentSeed = F3(
+			function (state, b, c) {
+				return $elm$random$Random$next(
+					A2($elm$random$Random$Seed, state, (1 | (b ^ c)) >>> 0));
+			});
+		var gen = A2($elm$random$Random$int, 0, 4294967295);
+		return A2(
+			$elm$random$Random$step,
+			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
+			seed0);
+	});
 var $author$project$Main$init = function (_v0) {
+	var party = _List_fromArray(
+		[$author$project$Piece$King]);
+	var lv = 1;
+	var _v1 = A2(
+		$elm$random$Random$step,
+		A2($author$project$Game$Generate$generateByLevel, lv, party),
+		$elm$random$Random$initialSeed(42));
+	var level = _v1.a;
+	var seed = _v1.b;
 	return _Utils_Tuple2(
 		{
-			game: $author$project$Game$new,
-			overlay: $elm$core$Maybe$Just($author$project$Overlay$GameMenu),
-			seed: $elm$random$Random$initialSeed(42)
+			artefacts: $elm$core$Dict$empty,
+			level: level,
+			levelCount: lv,
+			movementOverride: $elm$core$Maybe$Nothing,
+			overlay: $elm$core$Maybe$Just($author$project$Overlay$NewGame),
+			seed: seed,
+			selected: $elm$core$Maybe$Nothing
 		},
-		$elm$core$Platform$Cmd$none);
+		A2($elm$random$Random$generate, $author$project$Main$GotSeed, $elm$random$Random$independentSeed));
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$gotSeed = F2(
-	function (seed, model) {
-		return _Utils_update(
-			model,
-			{seed: seed});
+var $author$project$Action$EndMove = {$: 'EndMove'};
+var $author$project$Action$FindArtefact = function (a) {
+	return {$: 'FindArtefact', a: a};
+};
+var $author$project$Overlay$ShopOverlay = function (a) {
+	return {$: 'ShopOverlay', a: a};
+};
+var $author$project$Artefact$EscapeRope = {$: 'EscapeRope'};
+var $author$project$Overlay$FoundArtefactOverlay = function (a) {
+	return {$: 'FoundArtefactOverlay', a: a};
+};
+var $author$project$Main$RequestOpponentMove = {$: 'RequestOpponentMove'};
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
 	});
-var $author$project$Main$setOverlay = F2(
-	function (maybeOverlay, model) {
-		return _Utils_update(
-			model,
-			{overlay: maybeOverlay});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
 	});
-var $author$project$Main$newGame = function (model) {
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2($elm$core$Dict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
+var $elm$core$Set$diff = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$diff, dict1, dict2));
+	});
+var $elm$core$Dict$filter = F2(
+	function (isGood, dict) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, d) {
+					return A2(isGood, k, v) ? A3($elm$core$Dict$insert, k, v, d) : d;
+				}),
+			$elm$core$Dict$empty,
+			dict);
+	});
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $author$project$Artefact$Bible = {$: 'Bible'};
+var $author$project$Artefact$Coconuts = {$: 'Coconuts'};
+var $author$project$Artefact$DowsingRod = {$: 'DowsingRod'};
+var $author$project$Artefact$FingerPistol = {$: 'FingerPistol'};
+var $author$project$Artefact$IronThrone = {$: 'IronThrone'};
+var $author$project$Artefact$PocketMoney = {$: 'PocketMoney'};
+var $author$project$Artefact$PoliceBox = {$: 'PoliceBox'};
+var $author$project$Artefact$list = _List_fromArray(
+	[$author$project$Artefact$EscapeRope, $author$project$Artefact$PoliceBox, $author$project$Artefact$Coconuts, $author$project$Artefact$FingerPistol, $author$project$Artefact$IronThrone, $author$project$Artefact$DowsingRod, $author$project$Artefact$Bible, $author$project$Artefact$PocketMoney]);
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Artefact$name = function (item) {
+	switch (item.$) {
+		case 'EscapeRope':
+			return 'Escape Rope';
+		case 'PoliceBox':
+			return 'Police Box';
+		case 'Coconuts':
+			return 'Coconuts';
+		case 'FingerPistol':
+			return 'Finger Pistol';
+		case 'IronThrone':
+			return 'Iron Throne';
+		case 'DowsingRod':
+			return 'Dowsing Rod';
+		case 'Bible':
+			return 'Bible';
+		default:
+			return 'Pocket Money';
+	}
+};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Set$remove = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$remove, key, dict));
+	});
+var $elm$core$Process$sleep = _Process_sleep;
+var $author$project$Main$startLevel = F2(
+	function (party, model) {
+		var levelCount = model.levelCount + 1;
+		var _v0 = A2(
+			$elm$random$Random$step,
+			A2($author$project$Game$Generate$generateByLevel, levelCount, party),
+			model.seed);
+		var level = _v0.a;
+		var seed = _v0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{level: level, levelCount: levelCount, movementOverride: $elm$core$Maybe$Nothing, overlay: $elm$core$Maybe$Nothing, seed: seed, selected: $elm$core$Maybe$Nothing}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Level$undo = function (level) {
+	var _v0 = level.history;
+	if (_v0.b && _v0.b.b) {
+		var _v1 = _v0.b;
+		var board = _v1.a;
+		var history = _v1.b;
+		return _Utils_update(
+			level,
+			{board: board, history: history});
+	} else {
+		return level;
+	}
+};
+var $elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var $elm$random$Random$uniform = F2(
+	function (value, valueList) {
+		return A2(
+			$elm$random$Random$weighted,
+			$elm$random$Random$addOne(value),
+			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
+	});
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Main$applyAction = F2(
+	function (action, model) {
+		switch (action.$) {
+			case 'ResetLevel':
+				return A2(
+					$author$project$Main$startLevel,
+					A2(
+						$elm$core$List$map,
+						function (_v2) {
+							var piece = _v2.b.piece;
+							return piece;
+						},
+						$elm$core$Dict$toList(
+							A2(
+								$elm$core$Dict$filter,
+								F2(
+									function (_v1, square) {
+										return square.isWhite;
+									}),
+								model.level.board))),
+					_Utils_update(
+						model,
+						{levelCount: model.levelCount - 1}));
+			case 'NextLevel':
+				var party = action.a;
+				return A2($author$project$Main$startLevel, party, model);
+			case 'RemoveArtefactAnd':
+				var artefact = action.a;
+				var action2 = action.b;
+				return A2(
+					$author$project$Main$applyAction,
+					action2,
+					_Utils_update(
+						model,
+						{
+							artefacts: A2(
+								$elm$core$Dict$remove,
+								$author$project$Artefact$name(artefact),
+								model.artefacts)
+						}));
+			case 'AddArtefactAnd':
+				var artefact = action.a;
+				var action2 = action.b;
+				return A2(
+					$author$project$Main$applyAction,
+					action2,
+					_Utils_update(
+						model,
+						{
+							artefacts: A3(
+								$elm$core$Dict$insert,
+								$author$project$Artefact$name(artefact),
+								artefact,
+								model.artefacts)
+						}));
+			case 'UndoMove':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							level: $author$project$Level$undo(model.level)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'FindArtefact':
+				var pos = action.a;
+				return _Utils_Tuple2(
+					function (_v4) {
+						var artefact = _v4.a;
+						var seed = _v4.b;
+						return _Utils_update(
+							model,
+							{
+								level: function (l) {
+									return _Utils_update(
+										l,
+										{
+											loot: A2($elm$core$Set$remove, pos, l.loot)
+										});
+								}(model.level),
+								overlay: $elm$core$Maybe$Just(
+									$author$project$Overlay$FoundArtefactOverlay(artefact)),
+								seed: seed
+							});
+					}(
+						A2(
+							$elm$random$Random$step,
+							function () {
+								var _v3 = A2(
+									$elm$core$List$filter,
+									function (artefact) {
+										return !A2(
+											$elm$core$List$member,
+											artefact,
+											$elm$core$Dict$values(model.artefacts));
+									},
+									$author$project$Artefact$list);
+								if (_v3.b) {
+									var head = _v3.a;
+									var tail = _v3.b;
+									return A2($elm$random$Random$uniform, head, tail);
+								} else {
+									return $elm$random$Random$constant($author$project$Artefact$EscapeRope);
+								}
+							}(),
+							model.seed)),
+					$elm$core$Platform$Cmd$none);
+			case 'EndMove':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{movementOverride: $elm$core$Maybe$Nothing}),
+					A2(
+						$elm$core$Task$perform,
+						function (_v5) {
+							return $author$project$Main$RequestOpponentMove;
+						},
+						$elm$core$Process$sleep(100)));
+			case 'OverrideMovement':
+				var movement = action.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							movementOverride: $elm$core$Maybe$Just(movement)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'PlaceChest':
+				var _v6 = $elm$core$Set$toList(
+					A2(
+						$elm$core$Set$diff,
+						$elm$core$Set$fromList(
+							A2(
+								$elm$core$List$concatMap,
+								function (x) {
+									return A2(
+										$elm$core$List$map,
+										$elm$core$Tuple$pair(x),
+										A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1));
+								},
+								A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1))),
+						model.level.loot));
+				if (_v6.b) {
+					var head = _v6.a;
+					var tail = _v6.b;
+					return function (_v7) {
+						var pos = _v7.a;
+						var seed = _v7.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									level: function (l) {
+										return _Utils_update(
+											l,
+											{
+												loot: A2($elm$core$Set$insert, pos, l.loot)
+											});
+									}(model.level),
+									seed: seed
+								}),
+							$elm$core$Platform$Cmd$none);
+					}(
+						A2(
+							$elm$random$Random$step,
+							A2($elm$random$Random$uniform, head, tail),
+							model.seed));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$Loosing = {$: 'Loosing'};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$Score = function (a) {
+	return {$: 'Score', a: a};
+};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$Winning = {$: 'Winning'};
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Level$isLost = function (game) {
+	return $elm$core$Dict$isEmpty(
+		A2(
+			$elm$core$Dict$filter,
+			F2(
+				function (_v0, square) {
+					return _Utils_eq(square.piece, $author$project$Piece$King) && square.isWhite;
+				}),
+			game.board));
+};
+var $author$project$Level$isWon = function (game) {
+	return (!$elm$core$Dict$isEmpty(
+		A2(
+			$elm$core$Dict$filter,
+			F2(
+				function (_v0, square) {
+					var y = _v0.b;
+					return _Utils_eq(square.piece, $author$project$Piece$King) && (square.isWhite && (!y));
+				}),
+			game.board))) || $elm$core$Dict$isEmpty(
+		A2(
+			$elm$core$Dict$filter,
+			F2(
+				function (_v1, square) {
+					return !square.isWhite;
+				}),
+			game.board));
+};
+var $author$project$Level$evaluateForWhite = function (game) {
+	return $author$project$Level$isWon(game) ? $Orasund$elm_game_ai_minimax$MinimaxSearch$Winning : ($author$project$Level$isLost(game) ? $Orasund$elm_game_ai_minimax$MinimaxSearch$Loosing : A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, score) {
+				var square = _v0.b;
+				if (score.$ === 'Score') {
+					var n = score.a;
+					return $Orasund$elm_game_ai_minimax$MinimaxSearch$Score(
+						n + (square.isWhite ? $author$project$Piece$value(square.piece) : (-$author$project$Piece$value(square.piece))));
+				} else {
+					return score;
+				}
+			}),
+		$Orasund$elm_game_ai_minimax$MinimaxSearch$Score(0),
+		$elm$core$Dict$toList(game.board)));
+};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$negateEvaluation = function (intOrInf) {
+	switch (intOrInf.$) {
+		case 'Winning':
+			return $Orasund$elm_game_ai_minimax$MinimaxSearch$Loosing;
+		case 'Loosing':
+			return $Orasund$elm_game_ai_minimax$MinimaxSearch$Winning;
+		default:
+			var a = intOrInf.a;
+			return $Orasund$elm_game_ai_minimax$MinimaxSearch$Score(-a);
+	}
+};
+var $author$project$Level$evaluateForBlack = function (game) {
+	return $Orasund$elm_game_ai_minimax$MinimaxSearch$negateEvaluation(
+		$author$project$Level$evaluateForWhite(game));
+};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$isBiggerThen = F2(
+	function (b, a) {
+		var _v0 = _Utils_Tuple2(a, b);
+		_v0$2:
+		while (true) {
+			_v0$3:
+			while (true) {
+				switch (_v0.a.$) {
+					case 'Winning':
+						switch (_v0.b.$) {
+							case 'Loosing':
+								break _v0$2;
+							case 'Winning':
+								var _v1 = _v0.a;
+								var _v2 = _v0.b;
+								return false;
+							default:
+								break _v0$2;
+						}
+					case 'Loosing':
+						switch (_v0.b.$) {
+							case 'Loosing':
+								var _v3 = _v0.a;
+								var _v4 = _v0.b;
+								return false;
+							case 'Winning':
+								break _v0$3;
+							default:
+								break _v0$3;
+						}
+					default:
+						switch (_v0.b.$) {
+							case 'Loosing':
+								var _v7 = _v0.b;
+								return true;
+							case 'Winning':
+								var _v8 = _v0.b;
+								return false;
+							default:
+								var n1 = _v0.a.a;
+								var n2 = _v0.b.a;
+								return _Utils_cmp(n1, n2) > 0;
+						}
+				}
+			}
+			var _v6 = _v0.a;
+			return false;
+		}
+		var _v5 = _v0.a;
+		return true;
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$algoMax = function (args) {
+	var moves = A2(
+		args.possibleMoves,
+		{isYourTurn: args.isYourTurn},
+		args.game);
+	return ((!args.depth) || $elm$core$List$isEmpty(moves)) ? {
+		maxValue: args.evaluate(args.game),
+		move: args.move
+	} : A3(
+		$elm$core$List$foldl,
+		F2(
+			function (move, output) {
+				var value = $Orasund$elm_game_ai_minimax$MinimaxSearch$algoMax(
+					{
+						apply: args.apply,
+						depth: args.depth - 1,
+						evaluate: args.evaluate,
+						game: A2(args.apply, move, args.game),
+						isYourTurn: !args.isYourTurn,
+						maxDepth: args.maxDepth,
+						move: $elm$core$Maybe$Just(move),
+						possibleMoves: args.possibleMoves
+					}).maxValue;
+				return ((args.isYourTurn && A2($Orasund$elm_game_ai_minimax$MinimaxSearch$isBiggerThen, output.maxValue, value)) || ((!args.isYourTurn) && A2($Orasund$elm_game_ai_minimax$MinimaxSearch$isBiggerThen, value, output.maxValue))) ? {
+					maxValue: value,
+					move: _Utils_eq(args.depth, args.maxDepth) ? $elm$core$Maybe$Just(move) : output.move
+				} : output;
+			}),
+		{
+			maxValue: args.isYourTurn ? $Orasund$elm_game_ai_minimax$MinimaxSearch$Loosing : $Orasund$elm_game_ai_minimax$MinimaxSearch$Winning,
+			move: $elm$core$Maybe$Nothing
+		},
+		moves);
+};
+var $Orasund$elm_game_ai_minimax$MinimaxSearch$findBestMove = F2(
+	function (options, game) {
+		return $Orasund$elm_game_ai_minimax$MinimaxSearch$algoMax(
+			{apply: options.apply, depth: options.searchDepth, evaluate: options.evaluate, game: game, isYourTurn: true, maxDepth: options.searchDepth, move: $elm$core$Maybe$Nothing, possibleMoves: options.possibleMoves}).move;
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Level$move = F2(
+	function (args, game) {
+		return function (board) {
+			return _Utils_update(
+				game,
+				{
+					board: board,
+					history: A2($elm$core$List$cons, game.board, game.history)
+				});
+		}(
+			A2(
+				$elm$core$Maybe$withDefault,
+				game.board,
+				A2(
+					$elm$core$Maybe$map,
+					function (square) {
+						return A3(
+							$elm$core$Dict$insert,
+							args.to,
+							square,
+							A2($elm$core$Dict$remove, args.from, game.board));
+					},
+					A2($elm$core$Dict$get, args.from, game.board))));
+	});
+var $elm$core$Set$filter = F2(
+	function (isGood, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2(
+				$elm$core$Dict$filter,
+				F2(
+					function (key, _v1) {
+						return isGood(key);
+					}),
+				dict));
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $author$project$Piece$movement = function (piece) {
+	switch (piece.$) {
+		case 'King':
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(-1, 0),
+						_Utils_Tuple2(-1, -1),
+						_Utils_Tuple2(0, -1),
+						_Utils_Tuple2(1, -1),
+						_Utils_Tuple2(1, 0),
+						_Utils_Tuple2(1, 1),
+						_Utils_Tuple2(0, 1),
+						_Utils_Tuple2(-1, 1)
+					]));
+		case 'Rook':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(0, i),
+								_Utils_Tuple2(i, 0)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Bishop':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(i, i),
+								_Utils_Tuple2(-i, i),
+								_Utils_Tuple2(i, -i),
+								_Utils_Tuple2(-i, -i)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Queen':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(0, i),
+								_Utils_Tuple2(i, 0),
+								_Utils_Tuple2(i, i),
+								_Utils_Tuple2(-i, i),
+								_Utils_Tuple2(i, -i),
+								_Utils_Tuple2(-i, -i)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Knight':
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(2, 1),
+						_Utils_Tuple2(2, -1),
+						_Utils_Tuple2(-2, 1),
+						_Utils_Tuple2(-2, -1),
+						_Utils_Tuple2(1, 2),
+						_Utils_Tuple2(-1, 2),
+						_Utils_Tuple2(1, -2),
+						_Utils_Tuple2(-1, -2)
+					]));
+		default:
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(0, 1),
+						_Utils_Tuple2(0, -1),
+						_Utils_Tuple2(1, 1),
+						_Utils_Tuple2(-1, 1),
+						_Utils_Tuple2(1, -1),
+						_Utils_Tuple2(-1, -1)
+					]));
+	}
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Level$isValidMove = F2(
+	function (args, game) {
+		var targetSquare = A2($elm$core$Dict$get, args.to, game.board);
+		var sign = function (x) {
+			return (x > 0) ? 1 : ((x < 0) ? (-1) : 0);
+		};
+		var isValidPos = function (_v5) {
+			var i1 = _v5.a;
+			var i2 = _v5.b;
+			return (0 <= i1) && ((_Utils_cmp(i1, $author$project$Config$boardSize) < 0) && ((0 <= i2) && (_Utils_cmp(i2, $author$project$Config$boardSize) < 0)));
+		};
+		var canCapture = function (square) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				true,
+				A2(
+					$elm$core$Maybe$map,
+					function (_v4) {
+						var isWhite = _v4.isWhite;
+						return !_Utils_eq(isWhite, square.isWhite);
+					},
+					targetSquare));
+		};
+		var _v0 = args.to;
+		var toX = _v0.a;
+		var toY = _v0.b;
+		var _v1 = args.from;
+		var fromX = _v1.a;
+		var fromY = _v1.b;
+		var _v2 = _Utils_Tuple2(toX - fromX, toY - fromY);
+		var relX = _v2.a;
+		var relY = _v2.b;
+		var specialCase = function (square) {
+			var _v3 = square.piece;
+			switch (_v3.$) {
+				case 'King':
+					return true;
+				case 'Rook':
+					return A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1));
+				case 'Bishop':
+					return A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							$elm$core$Basics$abs(relX) - 1));
+				case 'Queen':
+					return ((!relX) || (!relY)) ? A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1)) : A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							$elm$core$Basics$abs(relX) - 1));
+				case 'Knight':
+					return true;
+				default:
+					return _Utils_eq(relY, -1) ? (square.isWhite && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
+						$elm$core$Maybe$Just(false),
+						A2(
+							$elm$core$Maybe$map,
+							function ($) {
+								return $.isWhite;
+							},
+							targetSquare)))) : ((!square.isWhite) && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
+						$elm$core$Maybe$Just(true),
+						A2(
+							$elm$core$Maybe$map,
+							function ($) {
+								return $.isWhite;
+							},
+							targetSquare))));
+			}
+		};
+		return isValidPos(args.from) && (isValidPos(args.to) && A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2(
+				$elm$core$Maybe$map,
+				function (square) {
+					return canCapture(square) && (A2(
+						$elm$core$Set$member,
+						_Utils_Tuple2(relX, relY),
+						$author$project$Piece$movement(square.piece)) && specialCase(square));
+				},
+				A2($elm$core$Dict$get, args.from, game.board))));
+	});
+var $elm$core$Set$foldl = F3(
+	function (func, initialState, _v0) {
+		var dict = _v0.a;
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (key, _v1, state) {
+					return A2(func, key, state);
+				}),
+			initialState,
+			dict);
+	});
+var $elm$core$Set$map = F2(
+	function (func, set) {
+		return $elm$core$Set$fromList(
+			A3(
+				$elm$core$Set$foldl,
+				F2(
+					function (x, xs) {
+						return A2(
+							$elm$core$List$cons,
+							func(x),
+							xs);
+					}),
+				_List_Nil,
+				set));
+	});
+var $author$project$Level$possibleMovesFor = F2(
+	function (_v0, game) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Set$empty,
+			A2(
+				$elm$core$Maybe$map,
+				function (square) {
+					return A2(
+						$elm$core$Set$filter,
+						function (to) {
+							return A2(
+								$author$project$Level$isValidMove,
+								{
+									from: _Utils_Tuple2(x, y),
+									to: to
+								},
+								game);
+						},
+						A2(
+							$elm$core$Set$map,
+							function (_v1) {
+								var relX = _v1.a;
+								var relY = _v1.b;
+								return _Utils_Tuple2(x + relX, y + relY);
+							},
+							$author$project$Piece$movement(square.piece)));
+				},
+				A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple2(x, y),
+					game.board)));
+	});
+var $author$project$Level$possibleMoves = F2(
+	function (args, game) {
+		return ($author$project$Level$isWon(game) || $author$project$Level$isLost(game)) ? _List_Nil : A2(
+			$elm$core$List$concatMap,
+			function (pos) {
+				return A2(
+					$elm$core$List$map,
+					function (to) {
+						return {from: pos, to: to};
+					},
+					$elm$core$Set$toList(
+						A2($author$project$Level$possibleMovesFor, pos, game)));
+			},
+			$elm$core$Dict$keys(
+				A2(
+					$elm$core$Dict$filter,
+					F2(
+						function (_v0, square) {
+							return _Utils_eq(!square.isWhite, args.isYourTurn);
+						}),
+					game.board)));
+	});
+var $author$project$Level$findNextMove = function (game) {
 	return A2(
-		$author$project$Main$setOverlay,
-		$elm$core$Maybe$Nothing,
-		_Utils_update(
-			model,
-			{game: $author$project$Game$new}));
+		$Orasund$elm_game_ai_minimax$MinimaxSearch$findBestMove,
+		{apply: $author$project$Level$move, evaluate: $author$project$Level$evaluateForBlack, possibleMoves: $author$project$Level$possibleMoves, searchDepth: 5},
+		game);
+};
+var $author$project$Action$OverrideMovement = function (a) {
+	return {$: 'OverrideMovement', a: a};
+};
+var $author$project$Action$PieceMovement = function (a) {
+	return {$: 'PieceMovement', a: a};
+};
+var $author$project$Action$PlaceChest = {$: 'PlaceChest'};
+var $author$project$Action$ResetLevel = {$: 'ResetLevel'};
+var $author$project$Action$ToChest = {$: 'ToChest'};
+var $author$project$Action$UndoMove = {$: 'UndoMove'};
+var $author$project$Action$fromArtefact = function (artefact) {
+	switch (artefact.$) {
+		case 'EscapeRope':
+			return $author$project$Action$ResetLevel;
+		case 'PoliceBox':
+			return $author$project$Action$UndoMove;
+		case 'Coconuts':
+			return $author$project$Action$OverrideMovement(
+				$author$project$Action$PieceMovement($author$project$Piece$Knight));
+		case 'FingerPistol':
+			return $author$project$Action$OverrideMovement(
+				$author$project$Action$PieceMovement($author$project$Piece$Pawn));
+		case 'IronThrone':
+			return $author$project$Action$OverrideMovement(
+				$author$project$Action$PieceMovement($author$project$Piece$King));
+		case 'DowsingRod':
+			return $author$project$Action$OverrideMovement($author$project$Action$ToChest);
+		case 'Bible':
+			return $author$project$Action$OverrideMovement(
+				$author$project$Action$PieceMovement($author$project$Piece$Bishop));
+		default:
+			return $author$project$Action$PlaceChest;
+	}
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		var withNoCmd = function (a) {
-			return _Utils_Tuple2(a, $elm$core$Platform$Cmd$none);
-		};
 		switch (msg.$) {
-			case 'NewGame':
-				return withNoCmd(
-					$author$project$Main$newGame(model));
+			case 'Select':
+				var maybe = msg.a;
+				var _v1 = model.selected;
+				if (_v1.$ === 'Nothing') {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{selected: maybe}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var selected = _v1.a;
+					if (maybe.$ === 'Nothing') {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{selected: maybe}),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						var to = maybe.a;
+						return A2(
+							$author$project$Main$applyAction,
+							A2($elm$core$Set$member, to, model.level.loot) ? $author$project$Action$FindArtefact(to) : $author$project$Action$EndMove,
+							function (level) {
+								return _Utils_update(
+									model,
+									{level: level, selected: $elm$core$Maybe$Nothing});
+							}(
+								A2(
+									$author$project$Level$move,
+									{from: selected, to: to},
+									model.level)));
+					}
+				}
+			case 'RequestOpponentMove':
+				return function (m) {
+					return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
+				}(
+					function () {
+						var _v3 = $author$project$Level$findNextMove(model.level);
+						if (_v3.$ === 'Just') {
+							var args = _v3.a;
+							return _Utils_update(
+								model,
+								{
+									level: A2($author$project$Level$move, args, model.level)
+								});
+						} else {
+							var _v4 = A2(
+								$author$project$Level$possibleMoves,
+								{isYourTurn: true},
+								model.level);
+							if (_v4.b) {
+								var head = _v4.a;
+								var tail = _v4.b;
+								return function (_v5) {
+									var move = _v5.a;
+									var seed = _v5.b;
+									return _Utils_update(
+										model,
+										{
+											level: A2($author$project$Level$move, move, model.level),
+											seed: seed
+										});
+								}(
+									A2(
+										$elm$random$Random$step,
+										A2($elm$random$Random$uniform, head, tail),
+										model.seed));
+							} else {
+								return model;
+							}
+						}
+					}());
 			case 'GotSeed':
 				var seed = msg.a;
-				return withNoCmd(
-					A2($author$project$Main$gotSeed, seed, model));
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{seed: seed}),
+					$elm$core$Platform$Cmd$none);
+			case 'EndLevel':
+				return _Utils_Tuple2(
+					function (party) {
+						return _Utils_update(
+							model,
+							{
+								overlay: $elm$core$Maybe$Just(
+									$author$project$Overlay$ShopOverlay(
+										{party: party}))
+							});
+					}(
+						A2(
+							$elm$core$List$map,
+							function (_v7) {
+								var piece = _v7.b.piece;
+								return piece;
+							},
+							$elm$core$Dict$toList(
+								A2(
+									$elm$core$Dict$filter,
+									F2(
+										function (_v6, square) {
+											return square.isWhite;
+										}),
+									model.level.board)))),
+					$elm$core$Platform$Cmd$none);
+			case 'Activate':
+				var artefact = msg.a;
+				return A2(
+					$author$project$Main$applyAction,
+					$author$project$Action$fromArtefact(artefact),
+					_Utils_update(
+						model,
+						{
+							artefacts: A2(
+								$elm$core$Dict$remove,
+								$author$project$Artefact$name(artefact),
+								model.artefacts)
+						}));
+			case 'CloseOverlay':
+				var action = msg.a;
+				return A2(
+					$author$project$Main$applyAction,
+					action,
+					_Utils_update(
+						model,
+						{overlay: $elm$core$Maybe$Nothing}));
 			default:
-				var maybeOverlay = msg.a;
-				return withNoCmd(
-					A2($author$project$Main$setOverlay, maybeOverlay, model));
+				return $author$project$Main$init(_Utils_Tuple0);
 		}
 	});
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $author$project$Main$Activate = function (a) {
+	return {$: 'Activate', a: a};
+};
+var $author$project$Main$CloseOverlay = function (a) {
+	return {$: 'CloseOverlay', a: a};
+};
+var $author$project$Action$DoNothing = {$: 'DoNothing'};
+var $author$project$Main$EndLevel = {$: 'EndLevel'};
+var $author$project$Main$Restart = {$: 'Restart'};
+var $author$project$Main$Select = function (a) {
+	return {$: 'Select', a: a};
+};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $Orasund$elm_layout$Layout$column = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column')
+				]),
+			attrs));
+};
+var $Orasund$elm_layout$Layout$contentCentered = A2($elm$html$Html$Attributes$style, 'justify-content', 'center');
 var $Orasund$elm_layout$Layout$el = F2(
 	function (attrs, content) {
 		return A2(
@@ -5295,53 +7410,43 @@ var $Orasund$elm_layout$Layout$el = F2(
 			_List_fromArray(
 				[content]));
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
+var $author$project$Action$AddArtefactAnd = F2(
+	function (a, b) {
+		return {$: 'AddArtefactAnd', a: a, b: b};
 	});
-var $author$project$Config$screenMinHeight = 700;
-var $author$project$Config$screenMinWidth = 400;
-var $elm$core$List$singleton = function (value) {
-	return _List_fromArray(
-		[value]);
+var $author$project$Action$RemoveArtefactAnd = F2(
+	function (a, b) {
+		return {$: 'RemoveArtefactAnd', a: a, b: b};
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $Orasund$elm_layout$Layout$gap = function (n) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'gap',
+		$elm$core$String$fromFloat(n) + 'px');
+};
+var $author$project$Artefact$description = function (item) {
+	switch (item.$) {
+		case 'EscapeRope':
+			return 'Restart the level';
+		case 'PoliceBox':
+			return 'Undo your last move';
+		case 'Coconuts':
+			return 'Move one piece like a knight';
+		case 'FingerPistol':
+			return 'Move one piece like a pawn';
+		case 'IronThrone':
+			return 'Move one piece like a king';
+		case 'DowsingRod':
+			return 'Move one piece to the chest';
+		case 'Bible':
+			return 'Move one piece like a bishop';
+		default:
+			return 'Spawn another chest';
+	}
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Config$title = 'Game Template';
-var $author$project$Main$NewGame = {$: 'NewGame'};
-var $author$project$View$Overlay$asFullScreenOverlay = function (attrs) {
-	return $Orasund$elm_layout$Layout$el(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-					A2($elm$html$Html$Attributes$style, 'inset', '0 0'),
-					A2($elm$html$Html$Attributes$style, 'height', '100%'),
-					A2($elm$html$Html$Attributes$style, 'width', '100%')
-				]),
-			attrs));
-};
-var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$style, 'align-items', 'center');
-var $Orasund$elm_layout$Layout$contentCentered = A2($elm$html$Html$Attributes$style, 'justify-content', 'center');
-var $Orasund$elm_layout$Layout$centered = _List_fromArray(
-	[$Orasund$elm_layout$Layout$contentCentered, $Orasund$elm_layout$Layout$alignAtCenter]);
-var $Orasund$elm_layout$Layout$column = function (attrs) {
-	return $elm$html$Html$div(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column')
-				]),
-			attrs));
-};
 var $Orasund$elm_layout$Layout$text = F2(
 	function (attrs, content) {
 		return A2(
@@ -5349,6 +7454,30 @@ var $Orasund$elm_layout$Layout$text = F2(
 			attrs,
 			$elm$html$Html$text(content));
 	});
+var $author$project$View$Artefact$info = function (artefact) {
+	return A2(
+		$Orasund$elm_layout$Layout$column,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)'),
+				A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$Orasund$elm_layout$Layout$text,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'font-size', '1.2rem')
+					]),
+				$author$project$Artefact$name(artefact)),
+				A2(
+				$Orasund$elm_layout$Layout$text,
+				_List_Nil,
+				$author$project$Artefact$description(artefact))
+			]));
+};
+var $author$project$Config$maxArtefacts = 2;
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -5374,15 +7503,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $Orasund$elm_layout$Layout$asButton = function (args) {
 	return _Utils_ap(
 		_List_fromArray(
@@ -5417,122 +7537,711 @@ var $Orasund$elm_layout$Layout$textButton = F2(
 					$elm$html$Html$text(args.label)
 				]));
 	});
-var $author$project$View$Overlay$gameMenu = function (args) {
-	return A2(
-		$author$project$View$Overlay$asFullScreenOverlay,
-		_Utils_ap(
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'background-color', 'var(--secondary-color)'),
-					A2($elm$html$Html$Attributes$style, 'color', 'white')
-				]),
-			$Orasund$elm_layout$Layout$centered),
-		A2(
+var $author$project$View$Overlay$foundArtefact = F2(
+	function (args, artefact) {
+		return A2(
 			$Orasund$elm_layout$Layout$column,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'gap', 'var(--big-space)')
-					]),
-				$Orasund$elm_layout$Layout$centered),
 			_List_fromArray(
 				[
-					A2(
-					$Orasund$elm_layout$Layout$column,
-					$Orasund$elm_layout$Layout$centered,
-					_List_fromArray(
-						[
-							A2(
-							$Orasund$elm_layout$Layout$text,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('font-size-title')
-								]),
-							'🎲'),
-							A2(
-							$Orasund$elm_layout$Layout$text,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('font-size-big')
-								]),
-							'Game-Template')
-						])),
-					A2(
+					$Orasund$elm_layout$Layout$gap(8),
+					A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+				]),
+			_List_fromArray(
+				[
+					A2($Orasund$elm_layout$Layout$text, _List_Nil, 'You have found the artefact'),
+					$author$project$View$Artefact$info(artefact),
+					(_Utils_cmp(
+					$elm$core$List$length(args.artefacts),
+					$author$project$Config$maxArtefacts) < 0) ? A2(
 					$Orasund$elm_layout$Layout$textButton,
 					_List_Nil,
 					{
-						label: 'Start',
-						onPress: $elm$core$Maybe$Just(args.startGame)
-					})
-				])));
-};
-var $author$project$Main$viewOverlay = F2(
-	function (_v0, overlay) {
-		return $author$project$View$Overlay$gameMenu(
-			{startGame: $author$project$Main$NewGame});
+						label: 'Take',
+						onPress: $elm$core$Maybe$Just(
+							args.onCloseOverlay(
+								A2($author$project$Action$AddArtefactAnd, artefact, $author$project$Action$EndMove)))
+					}) : A2(
+					$Orasund$elm_layout$Layout$column,
+					_List_fromArray(
+						[
+							$Orasund$elm_layout$Layout$gap(8)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$Orasund$elm_layout$Layout$column,
+							_List_fromArray(
+								[
+									$Orasund$elm_layout$Layout$gap(8)
+								]),
+							A2(
+								$elm$core$List$map,
+								function (oldArtefact) {
+									return A2(
+										$Orasund$elm_layout$Layout$textButton,
+										_List_Nil,
+										{
+											label: 'Discard ' + $author$project$Artefact$name(oldArtefact),
+											onPress: $elm$core$Maybe$Just(
+												args.onCloseOverlay(
+													A2(
+														$author$project$Action$RemoveArtefactAnd,
+														oldArtefact,
+														A2($author$project$Action$AddArtefactAnd, artefact, $author$project$Action$EndMove))))
+										});
+								},
+								args.artefacts)),
+							A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_Nil,
+							{
+								label: 'Discard ' + $author$project$Artefact$name(artefact),
+								onPress: $elm$core$Maybe$Just(
+									args.onCloseOverlay($author$project$Action$EndMove))
+							})
+						]))
+				]));
 	});
-var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
-var $elm$virtual_dom$VirtualDom$node = function (tag) {
-	return _VirtualDom_node(
-		_VirtualDom_noScript(tag));
+var $author$project$Config$screenMinWidth = 400;
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $author$project$Pixel$pixelated = A2($elm$html$Html$Attributes$style, 'image-rendering', 'pixelated');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$View$viewportMeta = function () {
-	var width = $elm$core$String$fromFloat($author$project$Config$screenMinWidth);
-	return A3(
-		$elm$html$Html$node,
-		'meta',
+var $author$project$View$Overlay$title = function (args) {
+	return A2(
+		$Orasund$elm_layout$Layout$column,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$name('viewport'),
-				A2($elm$html$Html$Attributes$attribute, 'content', 'initial-scale=1,user-scalable=no,width=' + width)
+				$Orasund$elm_layout$Layout$gap(16)
 			]),
-		_List_Nil);
-}();
-var $author$project$Main$view = function (model) {
-	var content = $elm$html$Html$text('');
-	return {
-		body: _List_fromArray(
+		_List_fromArray(
 			[
-				$author$project$View$viewportMeta,
 				A2(
-				$elm$html$Html$div,
+				$elm$html$Html$img,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$src('assets/title.png'),
+						$author$project$Pixel$pixelated,
+						A2(
+						$elm$html$Html$Attributes$style,
+						'width',
+						$elm$core$String$fromInt((($author$project$Config$screenMinWidth * 3) / 4) | 0))
+					]),
+				_List_Nil),
+				A2(
+				$Orasund$elm_layout$Layout$el,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
+						A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+					]),
+				A2($Orasund$elm_layout$Layout$text, _List_Nil, 'Get your king to the top of the board')),
+				A2(
+				$Orasund$elm_layout$Layout$textButton,
+				_List_Nil,
+				{
+					label: 'Start',
+					onPress: $elm$core$Maybe$Just(args.onStart)
+				})
+			]));
+};
+var $author$project$View$Artefact$toHtml = F2(
+	function (args, list) {
+		return A2(
+			$Orasund$elm_layout$Layout$column,
+			_List_fromArray(
+				[
+					$Orasund$elm_layout$Layout$gap(16)
+				]),
+			A2(
+				$elm$core$List$map,
+				function (artefact) {
+					return A2(
+						$Orasund$elm_layout$Layout$column,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$author$project$View$Artefact$info(artefact),
+								A2(
+								$Orasund$elm_layout$Layout$textButton,
+								_List_Nil,
+								{
+									label: 'Activate',
+									onPress: $elm$core$Maybe$Just(
+										args.onActivate(artefact))
+								})
+							]));
+				},
+				list));
+	});
+var $author$project$Pixel$spriteImage = F2(
+	function (attrs, args) {
+		var scaleY = args.height / args.spriteHeight;
+		var scaleX = args.width / args.spriteWidth;
+		var _v0 = args.pos;
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
 				_List_fromArray(
 					[
 						A2(
 						$elm$html$Html$Attributes$style,
 						'width',
-						$elm$core$String$fromFloat($author$project$Config$screenMinWidth) + 'px'),
+						$elm$core$String$fromFloat(args.width) + 'px'),
 						A2(
 						$elm$html$Html$Attributes$style,
 						'height',
-						$elm$core$String$fromFloat($author$project$Config$screenMinHeight) + 'px'),
-						$elm$html$Html$Attributes$class('container')
+						$elm$core$String$fromFloat(args.height) + 'px'),
+						A2($elm$html$Html$Attributes$style, 'background-image', 'url(' + (args.url + ') ')),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'background-position',
+						$elm$core$String$fromFloat(((-args.spriteWidth) * scaleX) * x) + ('px ' + ($elm$core$String$fromFloat(((-args.spriteHeight) * scaleY) * y) + 'px'))),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'background-size',
+						$elm$core$String$fromFloat((args.spriteWidth * args.sheetColumns) * scaleX) + ('px ' + ($elm$core$String$fromFloat((args.spriteHeight * args.sheetRows) * scaleY) + 'px'))),
+						A2($elm$html$Html$Attributes$style, 'background-repeat', 'no-repeat')
 					]),
-				A2(
-					$elm$core$List$cons,
-					A2(
-						$Orasund$elm_layout$Layout$el,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('content')
-							]),
-						content),
-					A2(
-						$elm$core$Maybe$withDefault,
+				attrs),
+			_List_Nil);
+	});
+var $author$project$Config$sqaureSize = 80;
+var $author$project$View$Spritesheet$toImage = F2(
+	function (attrs, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$author$project$Pixel$spriteImage,
+			A2($elm$core$List$cons, $author$project$Pixel$pixelated, attrs),
+			{
+				height: $author$project$Config$sqaureSize,
+				pos: _Utils_Tuple2(x, y),
+				sheetColumns: 8,
+				sheetRows: 2,
+				spriteHeight: 16,
+				spriteWidth: 16,
+				url: 'assets/spritesheet.png',
+				width: $author$project$Config$sqaureSize
+			});
+	});
+var $author$project$View$Spritesheet$loot = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(1, 0));
+};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $Orasund$elm_layout$Layout$none = $elm$html$Html$text('');
+var $Orasund$elm_layout$Layout$row = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'row'),
+					A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
+				]),
+			attrs));
+};
+var $author$project$View$Spritesheet$blackBishop = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(5, 0));
+};
+var $author$project$View$Spritesheet$blackKing = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(7, 0));
+};
+var $author$project$View$Spritesheet$blackKnight = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(4, 0));
+};
+var $author$project$View$Spritesheet$blackPawn = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(2, 0));
+};
+var $author$project$View$Spritesheet$blackQueen = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(6, 0));
+};
+var $author$project$View$Spritesheet$blackRook = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(3, 0));
+};
+var $author$project$View$Spritesheet$whiteBishop = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(5, 1));
+};
+var $author$project$View$Spritesheet$whiteKing = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(7, 1));
+};
+var $author$project$View$Spritesheet$whiteKnight = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(4, 1));
+};
+var $author$project$View$Spritesheet$whitePawn = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(2, 1));
+};
+var $author$project$View$Spritesheet$whiteQueen = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(6, 1));
+};
+var $author$project$View$Spritesheet$whiteRook = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(3, 1));
+};
+var $author$project$View$Square$toHtml = F2(
+	function (attrs, square) {
+		var _v0 = _Utils_Tuple2(square.piece, square.isWhite);
+		if (_v0.b) {
+			switch (_v0.a.$) {
+				case 'Pawn':
+					var _v1 = _v0.a;
+					return $author$project$View$Spritesheet$whitePawn(attrs);
+				case 'Rook':
+					var _v3 = _v0.a;
+					return $author$project$View$Spritesheet$whiteRook(attrs);
+				case 'Bishop':
+					var _v5 = _v0.a;
+					return $author$project$View$Spritesheet$whiteBishop(attrs);
+				case 'Knight':
+					var _v7 = _v0.a;
+					return $author$project$View$Spritesheet$whiteKnight(attrs);
+				case 'Queen':
+					var _v9 = _v0.a;
+					return $author$project$View$Spritesheet$whiteQueen(attrs);
+				default:
+					var _v11 = _v0.a;
+					return $author$project$View$Spritesheet$whiteKing(attrs);
+			}
+		} else {
+			switch (_v0.a.$) {
+				case 'Pawn':
+					var _v2 = _v0.a;
+					return $author$project$View$Spritesheet$blackPawn(attrs);
+				case 'Rook':
+					var _v4 = _v0.a;
+					return $author$project$View$Spritesheet$blackRook(attrs);
+				case 'Bishop':
+					var _v6 = _v0.a;
+					return $author$project$View$Spritesheet$blackBishop(attrs);
+				case 'Knight':
+					var _v8 = _v0.a;
+					return $author$project$View$Spritesheet$blackKnight(attrs);
+				case 'Queen':
+					var _v10 = _v0.a;
+					return $author$project$View$Spritesheet$blackQueen(attrs);
+				default:
+					var _v12 = _v0.a;
+					return $author$project$View$Spritesheet$blackKing(attrs);
+			}
+		}
+	});
+var $author$project$View$Level$toHtml = F2(
+	function (args, game) {
+		var isValidMove = function (move) {
+			var _v2 = args.movementOverride;
+			if (_v2.$ === 'Just') {
+				var movement = _v2.a;
+				if (movement.$ === 'PieceMovement') {
+					var piece = movement.a;
+					return A2(
+						$author$project$Level$isValidMove,
+						move,
+						_Utils_update(
+							game,
+							{
+								board: A3(
+									$elm$core$Dict$insert,
+									move.from,
+									{isWhite: true, piece: piece},
+									game.board)
+							}));
+				} else {
+					return A2($elm$core$Set$member, move.to, game.loot);
+				}
+			} else {
+				return A2($author$project$Level$isValidMove, move, game);
+			}
+		};
+		return A2(
+			$Orasund$elm_layout$Layout$column,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (y) {
+					return A2(
+						$Orasund$elm_layout$Layout$row,
 						_List_Nil,
 						A2(
-							$elm$core$Maybe$map,
-							$elm$core$List$singleton,
-							A2(
-								$elm$core$Maybe$map,
-								$author$project$Main$viewOverlay(model),
-								model.overlay)))))
-			]),
-		title: $author$project$Config$title
-	};
+							$elm$core$List$map,
+							function (x) {
+								var isValid = isValidMove(
+									{
+										from: A2(
+											$elm$core$Maybe$withDefault,
+											_Utils_Tuple2(-1, -1),
+											args.selected),
+										to: _Utils_Tuple2(x, y)
+									});
+								return A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'position', 'relative')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$Orasund$elm_layout$Layout$el,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$Attributes$style,
+													'height',
+													$elm$core$String$fromInt($author$project$Config$sqaureSize - (($author$project$Config$sqaureSize / 8) | 0)) + 'px'),
+													A2(
+													$elm$html$Html$Attributes$style,
+													'width',
+													$elm$core$String$fromInt($author$project$Config$sqaureSize - (($author$project$Config$sqaureSize / 8) | 0)) + 'px'),
+													A2(
+													$elm$html$Html$Attributes$style,
+													'background-color',
+													_Utils_eq(
+														args.selected,
+														$elm$core$Maybe$Just(
+															_Utils_Tuple2(x, y))) ? '#fcff00' : ((!A2($elm$core$Basics$modBy, 2, x + y)) ? 'var(--dark-gray-color)' : 'var(--gray-color)')),
+													function (c) {
+													return A2(
+														$elm$html$Html$Attributes$style,
+														'border',
+														$elm$core$String$fromInt(($author$project$Config$sqaureSize / 16) | 0) + ('px solid ' + c));
+												}(
+													isValid ? '#fcff00' : 'transparent')
+												]),
+											$Orasund$elm_layout$Layout$none),
+											function () {
+											var _v0 = A2(
+												$elm$core$Dict$get,
+												_Utils_Tuple2(x, y),
+												game.board);
+											if (_v0.$ === 'Just') {
+												var square = _v0.a;
+												return A2(
+													$author$project$View$Square$toHtml,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+															A2($elm$html$Html$Attributes$style, 'top', '-20px'),
+															A2($elm$html$Html$Attributes$style, 'left', '0')
+														]),
+													square);
+											} else {
+												return A2(
+													$elm$core$Set$member,
+													_Utils_Tuple2(x, y),
+													game.loot) ? $author$project$View$Spritesheet$loot(
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+															A2($elm$html$Html$Attributes$style, 'top', '-20px'),
+															A2($elm$html$Html$Attributes$style, 'left', '0')
+														])) : $Orasund$elm_layout$Layout$none;
+											}
+										}(),
+											A2(
+											$Orasund$elm_layout$Layout$el,
+											_Utils_ap(
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$Attributes$style,
+														'height',
+														$elm$core$String$fromInt($author$project$Config$sqaureSize) + 'px'),
+														A2(
+														$elm$html$Html$Attributes$style,
+														'width',
+														$elm$core$String$fromInt($author$project$Config$sqaureSize) + 'px'),
+														A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+														A2($elm$html$Html$Attributes$style, 'top', '0'),
+														A2($elm$html$Html$Attributes$style, 'left', '0'),
+														A2($elm$html$Html$Attributes$style, 'z-index', '1')
+													]),
+												$Orasund$elm_layout$Layout$asButton(
+													{
+														label: 'Select ' + ($elm$core$String$fromInt(x) + (',' + $elm$core$String$fromInt(y))),
+														onPress: function () {
+															var _v1 = args.selected;
+															if (_v1.$ === 'Just') {
+																var from = _v1.a;
+																return _Utils_eq(
+																	_Utils_Tuple2(x, y),
+																	from) ? $elm$core$Maybe$Just(
+																	args.onSelect($elm$core$Maybe$Nothing)) : (isValidMove(
+																	{
+																		from: from,
+																		to: _Utils_Tuple2(x, y)
+																	}) ? $elm$core$Maybe$Just(
+																	args.onSelect(
+																		$elm$core$Maybe$Just(
+																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing);
+															} else {
+																return A2(
+																	$elm$core$Maybe$withDefault,
+																	false,
+																	A2(
+																		$elm$core$Maybe$map,
+																		function ($) {
+																			return $.isWhite;
+																		},
+																		A2(
+																			$elm$core$Dict$get,
+																			_Utils_Tuple2(x, y),
+																			game.board))) ? $elm$core$Maybe$Just(
+																	args.onSelect(
+																		$elm$core$Maybe$Just(
+																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing;
+															}
+														}()
+													})),
+											$Orasund$elm_layout$Layout$none)
+										]));
+							},
+							A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1)));
+				},
+				A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1)));
+	});
+var $author$project$Action$NextLevel = function (a) {
+	return {$: 'NextLevel', a: a};
 };
-var $author$project$Main$main = $elm$browser$Browser$document(
+var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$style, 'align-items', 'center');
+var $author$project$Config$maxPartyMembers = 4;
+var $author$project$Piece$name = function (piece) {
+	switch (piece.$) {
+		case 'King':
+			return 'King';
+		case 'Rook':
+			return 'Rook';
+		case 'Bishop':
+			return 'Bishop';
+		case 'Knight':
+			return 'Knight';
+		case 'Pawn':
+			return 'Pawn';
+		default:
+			return 'Queen';
+	}
+};
+var $author$project$Piece$promote = function (piece) {
+	switch (piece.$) {
+		case 'Pawn':
+			return $elm$core$Maybe$Just($author$project$Piece$Knight);
+		case 'Knight':
+			return $elm$core$Maybe$Just($author$project$Piece$Bishop);
+		case 'Bishop':
+			return $elm$core$Maybe$Nothing;
+		case 'Rook':
+			return $elm$core$Maybe$Nothing;
+		case 'King':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$View$Shop$toHtml = function (args) {
+	return A2(
+		$Orasund$elm_layout$Layout$column,
+		_List_fromArray(
+			[
+				$Orasund$elm_layout$Layout$gap(16),
+				$Orasund$elm_layout$Layout$alignAtCenter
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$Orasund$elm_layout$Layout$row,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'font-size', '1.2rem')
+					]),
+				A2(
+					$elm$core$List$map,
+					function (piece) {
+						return A2(
+							$author$project$View$Square$toHtml,
+							_List_Nil,
+							{isWhite: true, piece: piece});
+					},
+					args.party)),
+				A2(
+				$Orasund$elm_layout$Layout$column,
+				_List_Nil,
+				A2(
+					$elm$core$List$filterMap,
+					$elm$core$Basics$identity,
+					A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (i, piece) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (newPiece) {
+										return A2(
+											$Orasund$elm_layout$Layout$textButton,
+											_List_Nil,
+											{
+												label: 'Promote ' + ($author$project$Piece$name(piece) + (' to ' + $author$project$Piece$name(newPiece))),
+												onPress: $elm$core$Maybe$Just(
+													args.onCloseOverlay(
+														$author$project$Action$NextLevel(
+															A2(
+																$elm$core$List$indexedMap,
+																function (j) {
+																	return _Utils_eq(i, j) ? function (_v0) {
+																		return newPiece;
+																	} : $elm$core$Basics$identity;
+																},
+																args.party))))
+											});
+									},
+									$author$project$Piece$promote(piece));
+							}),
+						args.party))),
+				(_Utils_cmp(
+				$elm$core$List$length(args.party),
+				$author$project$Config$maxPartyMembers) < 0) ? A2(
+				$Orasund$elm_layout$Layout$textButton,
+				_List_Nil,
+				{
+					label: 'Recruit ' + $author$project$Piece$name($author$project$Piece$Pawn),
+					onPress: $elm$core$Maybe$Just(
+						args.onCloseOverlay(
+							$author$project$Action$NextLevel(
+								A2($elm$core$List$cons, $author$project$Piece$Pawn, args.party))))
+				}) : A2(
+				$Orasund$elm_layout$Layout$textButton,
+				_List_Nil,
+				{
+					label: 'Leave Shop',
+					onPress: $elm$core$Maybe$Just(
+						args.onCloseOverlay(
+							$author$project$Action$NextLevel(args.party)))
+				})
+			]));
+};
+var $author$project$Main$view = function (model) {
+	return A2(
+		$Orasund$elm_layout$Layout$el,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$Attributes$style,
+				'width',
+				$elm$core$String$fromFloat($author$project$Config$screenMinWidth)),
+				$Orasund$elm_layout$Layout$contentCentered
+			]),
+		function () {
+			var _v0 = model.overlay;
+			if (_v0.$ === 'Just') {
+				switch (_v0.a.$) {
+					case 'ShopOverlay':
+						var party = _v0.a.a.party;
+						return $author$project$View$Shop$toHtml(
+							{onCloseOverlay: $author$project$Main$CloseOverlay, party: party});
+					case 'FoundArtefactOverlay':
+						var artefact = _v0.a.a;
+						return A2(
+							$author$project$View$Overlay$foundArtefact,
+							{
+								artefacts: $elm$core$Dict$values(model.artefacts),
+								onCloseOverlay: $author$project$Main$CloseOverlay
+							},
+							artefact);
+					default:
+						var _v1 = _v0.a;
+						return $author$project$View$Overlay$title(
+							{
+								onStart: $author$project$Main$CloseOverlay($author$project$Action$DoNothing)
+							});
+				}
+			} else {
+				return A2(
+					$Orasund$elm_layout$Layout$column,
+					_List_fromArray(
+						[
+							$Orasund$elm_layout$Layout$gap(16)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$author$project$View$Level$toHtml,
+							{movementOverride: model.movementOverride, onSelect: $author$project$Main$Select, selected: model.selected},
+							model.level),
+							$author$project$Level$isWon(model.level) ? A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_Nil,
+							{
+								label: 'Next Level',
+								onPress: $elm$core$Maybe$Just($author$project$Main$EndLevel)
+							}) : ($author$project$Level$isLost(model.level) ? A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'background-color', 'var(--red-color)')
+								]),
+							{
+								label: 'You died on level ' + $elm$core$String$fromInt(model.levelCount),
+								onPress: $elm$core$Maybe$Just($author$project$Main$Restart)
+							}) : A2(
+							$author$project$View$Artefact$toHtml,
+							{onActivate: $author$project$Main$Activate},
+							$elm$core$Dict$values(model.artefacts)))
+						]));
+			}
+		}());
+};
+var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));

@@ -1,25 +1,21 @@
 module Config exposing (..)
 
-{-| -}
+
+boardSize =
+    4
 
 
-{-| I experienced odd behaviour with dynamic screen-sizes on itch.io
+maxPartyMembers =
+    4
 
-That's why i tend to require width of 400-500px. Bigger screens just effect the margins.
 
-This has also the added benefit, that the games are easier to support on mobile.
+maxArtefacts =
+    2
 
--}
-screenMinWidth : number
+
 screenMinWidth =
     400
 
 
-screenMinHeight : number
-screenMinHeight =
-    700
-
-
-title : String
-title =
-    "Game Template"
+sqaureSize =
+    80

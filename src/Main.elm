@@ -30,6 +30,7 @@ type alias Model =
     , overlay : Maybe Overlay
     , seed : Seed
     , movementOverride : Maybe Movement
+    , score : Int
     }
 
 
@@ -66,6 +67,7 @@ init () =
       , overlay = Just NewGame
       , seed = seed
       , movementOverride = Nothing
+      , score = 0
       }
     , Random.generate GotSeed Random.independentSeed
     )
@@ -268,6 +270,13 @@ update msg model =
                 |> (\party ->
                         { model
                             | overlay = ShopOverlay { party = party } |> Just
+                            , score =
+                                model.level.board
+                                    |> Dict.filter (\_ square -> not square.isWhite)
+                                    |> Dict.toList
+                                    |> List.map (\( _, square ) -> Piece.value square.piece)
+                                    |> List.sum
+                                    |> (+) model.score
                         }
                    )
             , Cmd.none
@@ -307,23 +316,63 @@ view model =
             View.Overlay.title { onStart = CloseOverlay DoNothing }
 
         Nothing ->
-            [ View.Level.toHtml
+            [ [ "Level "
+                    ++ String.fromInt model.levelCount
+                    |> Layout.text
+                        [ Html.Attributes.style "background-color" "var(--gray-color)"
+                        , Html.Attributes.style "padding" "var(--small-space)"
+                        ]
+              , "Score "
+                    ++ String.fromInt model.score
+                    |> Layout.text
+                        [ Html.Attributes.style "background-color" "var(--gray-color)"
+                        , Html.Attributes.style "padding" "var(--small-space)"
+                        ]
+              ]
+                |> Layout.row [ Layout.contentWithSpaceBetween ]
+            , View.Level.toHtml
                 { selected = model.selected
                 , onSelect = Select
                 , movementOverride = model.movementOverride
                 }
                 model.level
             , if Level.isWon model.level then
-                Layout.textButton []
+                [ model.level.board
+                    |> Dict.filter (\_ square -> not square.isWhite)
+                    |> Dict.toList
+                    |> List.map
+                        (\( _, square ) ->
+                            [ Piece.name square.piece
+                                |> Layout.text []
+                            , Piece.value square.piece
+                                |> (\n ->
+                                        if n == 1 then
+                                            "1 Point"
+
+                                        else
+                                            String.fromInt n ++ " Points"
+                                   )
+                                |> Layout.text []
+                            ]
+                                |> Layout.row [ Layout.contentWithSpaceBetween ]
+                        )
+                    |> Layout.column
+                        [ Layout.gap 8
+                        , Html.Attributes.style "padding" "var(--small-space)"
+                        , Html.Attributes.style "background-color" "var(--gray-color)"
+                        ]
+                , Layout.textButton []
                     { label = "Next Level"
                     , onPress = Just EndLevel
                     }
+                ]
+                    |> Layout.column [ Layout.gap 16 ]
 
               else if Level.isLost model.level then
                 Layout.textButton
                     [ Html.Attributes.style "background-color" "var(--red-color)"
                     ]
-                    { label = "You died on level " ++ String.fromInt model.levelCount
+                    { label = "You died"
                     , onPress = Just Restart
                     }
 

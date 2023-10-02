@@ -6,7 +6,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes
 import Layout
-import Level exposing (Level)
+import Level exposing (Level, isWon)
 import Piece exposing (Piece(..))
 import Set
 import View.Spritesheet
@@ -84,7 +84,7 @@ toHtml args game =
                                 Just square ->
                                     View.Square.toHtml
                                         [ Html.Attributes.style "position" "absolute"
-                                        , Html.Attributes.style "top" "-20px"
+                                        , Html.Attributes.style "top" "-25px"
                                         , Html.Attributes.style "left" "0"
                                         ]
                                         square
@@ -93,7 +93,7 @@ toHtml args game =
                                     if Set.member ( x, y ) game.loot then
                                         View.Spritesheet.loot
                                             [ Html.Attributes.style "position" "absolute"
-                                            , Html.Attributes.style "top" "-20px"
+                                            , Html.Attributes.style "top" "-25px"
                                             , Html.Attributes.style "left" "0"
                                             ]
 
@@ -123,10 +123,12 @@ toHtml args game =
 
                                                 Nothing ->
                                                     if
-                                                        game.board
+                                                        (game.board
                                                             |> Dict.get ( x, y )
                                                             |> Maybe.map .isWhite
                                                             |> Maybe.withDefault False
+                                                        )
+                                                            && not (isWon game)
                                                     then
                                                         args.onSelect (Just ( x, y )) |> Just
 

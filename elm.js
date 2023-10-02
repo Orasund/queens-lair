@@ -5860,6 +5860,7 @@ var $author$project$Main$init = function (_v0) {
 			levelCount: lv,
 			movementOverride: $elm$core$Maybe$Nothing,
 			overlay: $elm$core$Maybe$Just($author$project$Overlay$NewGame),
+			score: 0,
 			seed: seed,
 			selected: $elm$core$Maybe$Nothing
 		},
@@ -6636,14 +6637,336 @@ var $author$project$Level$isLost = function (game) {
 				}),
 			game.board));
 };
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $author$project$Piece$movement = function (piece) {
+	switch (piece.$) {
+		case 'King':
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(-1, 0),
+						_Utils_Tuple2(-1, -1),
+						_Utils_Tuple2(0, -1),
+						_Utils_Tuple2(1, -1),
+						_Utils_Tuple2(1, 0),
+						_Utils_Tuple2(1, 1),
+						_Utils_Tuple2(0, 1),
+						_Utils_Tuple2(-1, 1)
+					]));
+		case 'Rook':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(0, i),
+								_Utils_Tuple2(i, 0)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Bishop':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(i, i),
+								_Utils_Tuple2(-i, i),
+								_Utils_Tuple2(i, -i),
+								_Utils_Tuple2(-i, -i)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Queen':
+			return $elm$core$Set$fromList(
+				A2(
+					$elm$core$List$concatMap,
+					function (i) {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(0, i),
+								_Utils_Tuple2(i, 0),
+								_Utils_Tuple2(i, i),
+								_Utils_Tuple2(-i, i),
+								_Utils_Tuple2(i, -i),
+								_Utils_Tuple2(-i, -i)
+							]);
+					},
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+		case 'Knight':
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(2, 1),
+						_Utils_Tuple2(2, -1),
+						_Utils_Tuple2(-2, 1),
+						_Utils_Tuple2(-2, -1),
+						_Utils_Tuple2(1, 2),
+						_Utils_Tuple2(-1, 2),
+						_Utils_Tuple2(1, -2),
+						_Utils_Tuple2(-1, -2)
+					]));
+		default:
+			return $elm$core$Set$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(0, 1),
+						_Utils_Tuple2(0, -1),
+						_Utils_Tuple2(1, 1),
+						_Utils_Tuple2(-1, 1),
+						_Utils_Tuple2(1, -1),
+						_Utils_Tuple2(-1, -1)
+					]));
+	}
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Level$isValidMove = F2(
+	function (args, game) {
+		var targetSquare = A2($elm$core$Dict$get, args.to, game.board);
+		var sign = function (x) {
+			return (x > 0) ? 1 : ((x < 0) ? (-1) : 0);
+		};
+		var isValidPos = function (_v5) {
+			var i1 = _v5.a;
+			var i2 = _v5.b;
+			return (0 <= i1) && ((_Utils_cmp(i1, $author$project$Config$boardSize) < 0) && ((0 <= i2) && (_Utils_cmp(i2, $author$project$Config$boardSize) < 0)));
+		};
+		var canCapture = function (square) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				true,
+				A2(
+					$elm$core$Maybe$map,
+					function (_v4) {
+						var isWhite = _v4.isWhite;
+						return !_Utils_eq(isWhite, square.isWhite);
+					},
+					targetSquare));
+		};
+		var _v0 = args.to;
+		var toX = _v0.a;
+		var toY = _v0.b;
+		var _v1 = args.from;
+		var fromX = _v1.a;
+		var fromY = _v1.b;
+		var _v2 = _Utils_Tuple2(toX - fromX, toY - fromY);
+		var relX = _v2.a;
+		var relY = _v2.b;
+		var specialCase = function (square) {
+			var _v3 = square.piece;
+			switch (_v3.$) {
+				case 'King':
+					return true;
+				case 'Rook':
+					return A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1));
+				case 'Bishop':
+					return A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							$elm$core$Basics$abs(relX) - 1));
+				case 'Queen':
+					return ((!relX) || (!relY)) ? A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1)) : A2(
+						$elm$core$List$all,
+						function (i) {
+							return _Utils_eq(
+								$elm$core$Maybe$Nothing,
+								A2(
+									$elm$core$Dict$get,
+									_Utils_Tuple2(
+										fromX + (i * sign(relX)),
+										fromY + (i * sign(relY))),
+									game.board));
+						},
+						A2(
+							$elm$core$List$range,
+							1,
+							$elm$core$Basics$abs(relX) - 1));
+				case 'Knight':
+					return true;
+				default:
+					return _Utils_eq(relY, -1) ? (square.isWhite && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
+						$elm$core$Maybe$Just(false),
+						A2(
+							$elm$core$Maybe$map,
+							function ($) {
+								return $.isWhite;
+							},
+							targetSquare)))) : ((!square.isWhite) && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
+						$elm$core$Maybe$Just(true),
+						A2(
+							$elm$core$Maybe$map,
+							function ($) {
+								return $.isWhite;
+							},
+							targetSquare))));
+			}
+		};
+		return isValidPos(args.from) && (isValidPos(args.to) && A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2(
+				$elm$core$Maybe$map,
+				function (square) {
+					return canCapture(square) && (A2(
+						$elm$core$Set$member,
+						_Utils_Tuple2(relX, relY),
+						$author$project$Piece$movement(square.piece)) && specialCase(square));
+				},
+				A2($elm$core$Dict$get, args.from, game.board))));
+	});
+var $author$project$Level$isSave = F2(
+	function (args, game) {
+		return !A2(
+			$elm$core$List$any,
+			function (from) {
+				return A2(
+					$author$project$Level$isValidMove,
+					{from: from, to: args.pos},
+					game);
+			},
+			$elm$core$Dict$keys(
+				A2(
+					$elm$core$Dict$filter,
+					F2(
+						function (_v0, square) {
+							return !_Utils_eq(square.isWhite, args.isWhite);
+						}),
+					game.board)));
+	});
 var $author$project$Level$isWon = function (game) {
 	return (!$elm$core$Dict$isEmpty(
 		A2(
 			$elm$core$Dict$filter,
 			F2(
 				function (_v0, square) {
+					var x = _v0.a;
 					var y = _v0.b;
-					return _Utils_eq(square.piece, $author$project$Piece$King) && (square.isWhite && (!y));
+					return _Utils_eq(square.piece, $author$project$Piece$King) && (square.isWhite && ((!y) && A2(
+						$author$project$Level$isSave,
+						{
+							isWhite: true,
+							pos: _Utils_Tuple2(x, y)
+						},
+						game)));
 				}),
 			game.board))) || $elm$core$Dict$isEmpty(
 		A2(
@@ -6783,56 +7106,6 @@ var $Orasund$elm_game_ai_minimax$MinimaxSearch$findBestMove = F2(
 		return $Orasund$elm_game_ai_minimax$MinimaxSearch$algoMax(
 			{apply: options.apply, depth: options.searchDepth, evaluate: options.evaluate, game: game, isYourTurn: true, maxDepth: options.searchDepth, move: $elm$core$Maybe$Nothing, possibleMoves: options.possibleMoves}).move;
 	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Level$move = F2(
 	function (args, game) {
 		return function (board) {
@@ -6868,252 +7141,6 @@ var $elm$core$Set$filter = F2(
 						return isGood(key);
 					}),
 				dict));
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $elm$core$Set$member = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return A2($elm$core$Dict$member, key, dict);
-	});
-var $author$project$Piece$movement = function (piece) {
-	switch (piece.$) {
-		case 'King':
-			return $elm$core$Set$fromList(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(-1, 0),
-						_Utils_Tuple2(-1, -1),
-						_Utils_Tuple2(0, -1),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(1, 0),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(0, 1),
-						_Utils_Tuple2(-1, 1)
-					]));
-		case 'Rook':
-			return $elm$core$Set$fromList(
-				A2(
-					$elm$core$List$concatMap,
-					function (i) {
-						return _List_fromArray(
-							[
-								_Utils_Tuple2(0, i),
-								_Utils_Tuple2(i, 0)
-							]);
-					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
-		case 'Bishop':
-			return $elm$core$Set$fromList(
-				A2(
-					$elm$core$List$concatMap,
-					function (i) {
-						return _List_fromArray(
-							[
-								_Utils_Tuple2(i, i),
-								_Utils_Tuple2(-i, i),
-								_Utils_Tuple2(i, -i),
-								_Utils_Tuple2(-i, -i)
-							]);
-					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
-		case 'Queen':
-			return $elm$core$Set$fromList(
-				A2(
-					$elm$core$List$concatMap,
-					function (i) {
-						return _List_fromArray(
-							[
-								_Utils_Tuple2(0, i),
-								_Utils_Tuple2(i, 0),
-								_Utils_Tuple2(i, i),
-								_Utils_Tuple2(-i, i),
-								_Utils_Tuple2(i, -i),
-								_Utils_Tuple2(-i, -i)
-							]);
-					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
-		case 'Knight':
-			return $elm$core$Set$fromList(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(2, 1),
-						_Utils_Tuple2(2, -1),
-						_Utils_Tuple2(-2, 1),
-						_Utils_Tuple2(-2, -1),
-						_Utils_Tuple2(1, 2),
-						_Utils_Tuple2(-1, 2),
-						_Utils_Tuple2(1, -2),
-						_Utils_Tuple2(-1, -2)
-					]));
-		default:
-			return $elm$core$Set$fromList(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(0, 1),
-						_Utils_Tuple2(0, -1),
-						_Utils_Tuple2(1, 1),
-						_Utils_Tuple2(-1, 1),
-						_Utils_Tuple2(1, -1),
-						_Utils_Tuple2(-1, -1)
-					]));
-	}
-};
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Level$isValidMove = F2(
-	function (args, game) {
-		var targetSquare = A2($elm$core$Dict$get, args.to, game.board);
-		var sign = function (x) {
-			return (x > 0) ? 1 : ((x < 0) ? (-1) : 0);
-		};
-		var isValidPos = function (_v5) {
-			var i1 = _v5.a;
-			var i2 = _v5.b;
-			return (0 <= i1) && ((_Utils_cmp(i1, $author$project$Config$boardSize) < 0) && ((0 <= i2) && (_Utils_cmp(i2, $author$project$Config$boardSize) < 0)));
-		};
-		var canCapture = function (square) {
-			return A2(
-				$elm$core$Maybe$withDefault,
-				true,
-				A2(
-					$elm$core$Maybe$map,
-					function (_v4) {
-						var isWhite = _v4.isWhite;
-						return !_Utils_eq(isWhite, square.isWhite);
-					},
-					targetSquare));
-		};
-		var _v0 = args.to;
-		var toX = _v0.a;
-		var toY = _v0.b;
-		var _v1 = args.from;
-		var fromX = _v1.a;
-		var fromY = _v1.b;
-		var _v2 = _Utils_Tuple2(toX - fromX, toY - fromY);
-		var relX = _v2.a;
-		var relY = _v2.b;
-		var specialCase = function (square) {
-			var _v3 = square.piece;
-			switch (_v3.$) {
-				case 'King':
-					return true;
-				case 'Rook':
-					return A2(
-						$elm$core$List$all,
-						function (i) {
-							return _Utils_eq(
-								$elm$core$Maybe$Nothing,
-								A2(
-									$elm$core$Dict$get,
-									_Utils_Tuple2(
-										fromX + (i * sign(relX)),
-										fromY + (i * sign(relY))),
-									game.board));
-						},
-						A2(
-							$elm$core$List$range,
-							1,
-							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1));
-				case 'Bishop':
-					return A2(
-						$elm$core$List$all,
-						function (i) {
-							return _Utils_eq(
-								$elm$core$Maybe$Nothing,
-								A2(
-									$elm$core$Dict$get,
-									_Utils_Tuple2(
-										fromX + (i * sign(relX)),
-										fromY + (i * sign(relY))),
-									game.board));
-						},
-						A2(
-							$elm$core$List$range,
-							1,
-							$elm$core$Basics$abs(relX) - 1));
-				case 'Queen':
-					return ((!relX) || (!relY)) ? A2(
-						$elm$core$List$all,
-						function (i) {
-							return _Utils_eq(
-								$elm$core$Maybe$Nothing,
-								A2(
-									$elm$core$Dict$get,
-									_Utils_Tuple2(
-										fromX + (i * sign(relX)),
-										fromY + (i * sign(relY))),
-									game.board));
-						},
-						A2(
-							$elm$core$List$range,
-							1,
-							($elm$core$Basics$abs(relX) + $elm$core$Basics$abs(relY)) - 1)) : A2(
-						$elm$core$List$all,
-						function (i) {
-							return _Utils_eq(
-								$elm$core$Maybe$Nothing,
-								A2(
-									$elm$core$Dict$get,
-									_Utils_Tuple2(
-										fromX + (i * sign(relX)),
-										fromY + (i * sign(relY))),
-									game.board));
-						},
-						A2(
-							$elm$core$List$range,
-							1,
-							$elm$core$Basics$abs(relX) - 1));
-				case 'Knight':
-					return true;
-				default:
-					return _Utils_eq(relY, -1) ? (square.isWhite && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
-						$elm$core$Maybe$Just(false),
-						A2(
-							$elm$core$Maybe$map,
-							function ($) {
-								return $.isWhite;
-							},
-							targetSquare)))) : ((!square.isWhite) && ((!relX) ? _Utils_eq(targetSquare, $elm$core$Maybe$Nothing) : _Utils_eq(
-						$elm$core$Maybe$Just(true),
-						A2(
-							$elm$core$Maybe$map,
-							function ($) {
-								return $.isWhite;
-							},
-							targetSquare))));
-			}
-		};
-		return isValidPos(args.from) && (isValidPos(args.to) && A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A2(
-				$elm$core$Maybe$map,
-				function (square) {
-					return canCapture(square) && (A2(
-						$elm$core$Set$member,
-						_Utils_Tuple2(relX, relY),
-						$author$project$Piece$movement(square.piece)) && specialCase(square));
-				},
-				A2($elm$core$Dict$get, args.from, game.board))));
 	});
 var $elm$core$Set$foldl = F3(
 	function (func, initialState, _v0) {
@@ -7330,7 +7357,22 @@ var $author$project$Main$update = F2(
 							{
 								overlay: $elm$core$Maybe$Just(
 									$author$project$Overlay$ShopOverlay(
-										{party: party}))
+										{party: party})),
+								score: model.score + $elm$core$List$sum(
+									A2(
+										$elm$core$List$map,
+										function (_v9) {
+											var square = _v9.b;
+											return $author$project$Piece$value(square.piece);
+										},
+										$elm$core$Dict$toList(
+											A2(
+												$elm$core$Dict$filter,
+												F2(
+													function (_v8, square) {
+														return !square.isWhite;
+													}),
+												model.level.board))))
 							});
 					}(
 						A2(
@@ -7399,6 +7441,7 @@ var $Orasund$elm_layout$Layout$column = function (attrs) {
 			attrs));
 };
 var $Orasund$elm_layout$Layout$contentCentered = A2($elm$html$Html$Attributes$style, 'justify-content', 'center');
+var $Orasund$elm_layout$Layout$contentWithSpaceBetween = A2($elm$html$Html$Attributes$style, 'justify-content', 'space-between');
 var $Orasund$elm_layout$Layout$el = F2(
 	function (attrs, content) {
 		return A2(
@@ -7603,6 +7646,33 @@ var $author$project$View$Overlay$foundArtefact = F2(
 						]))
 				]));
 	});
+var $author$project$Piece$name = function (piece) {
+	switch (piece.$) {
+		case 'King':
+			return 'King';
+		case 'Rook':
+			return 'Rook';
+		case 'Bishop':
+			return 'Bishop';
+		case 'Knight':
+			return 'Knight';
+		case 'Pawn':
+			return 'Pawn';
+		default:
+			return 'Queen';
+	}
+};
+var $Orasund$elm_layout$Layout$row = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'row'),
+					A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
+				]),
+			attrs));
+};
 var $author$project$Config$screenMinWidth = 400;
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $author$project$Pixel$pixelated = A2($elm$html$Html$Attributes$style, 'image-rendering', 'pixelated');
@@ -7748,17 +7818,6 @@ var $author$project$View$Spritesheet$loot = function (attrs) {
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $Orasund$elm_layout$Layout$none = $elm$html$Html$text('');
-var $Orasund$elm_layout$Layout$row = function (attrs) {
-	return $elm$html$Html$div(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'flex-direction', 'row'),
-					A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
-				]),
-			attrs));
-};
 var $author$project$View$Spritesheet$blackBishop = function (attrs) {
 	return A2(
 		$author$project$View$Spritesheet$toImage,
@@ -7973,7 +8032,7 @@ var $author$project$View$Level$toHtml = F2(
 													_List_fromArray(
 														[
 															A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-															A2($elm$html$Html$Attributes$style, 'top', '-20px'),
+															A2($elm$html$Html$Attributes$style, 'top', '-25px'),
 															A2($elm$html$Html$Attributes$style, 'left', '0')
 														]),
 													square);
@@ -7985,7 +8044,7 @@ var $author$project$View$Level$toHtml = F2(
 													_List_fromArray(
 														[
 															A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-															A2($elm$html$Html$Attributes$style, 'top', '-20px'),
+															A2($elm$html$Html$Attributes$style, 'top', '-25px'),
 															A2($elm$html$Html$Attributes$style, 'left', '0')
 														])) : $Orasund$elm_layout$Layout$none;
 											}
@@ -8027,7 +8086,7 @@ var $author$project$View$Level$toHtml = F2(
 																		$elm$core$Maybe$Just(
 																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing);
 															} else {
-																return A2(
+																return (A2(
 																	$elm$core$Maybe$withDefault,
 																	false,
 																	A2(
@@ -8038,7 +8097,7 @@ var $author$project$View$Level$toHtml = F2(
 																		A2(
 																			$elm$core$Dict$get,
 																			_Utils_Tuple2(x, y),
-																			game.board))) ? $elm$core$Maybe$Just(
+																			game.board))) && (!$author$project$Level$isWon(game))) ? $elm$core$Maybe$Just(
 																	args.onSelect(
 																		$elm$core$Maybe$Just(
 																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing;
@@ -8057,22 +8116,6 @@ var $author$project$Action$NextLevel = function (a) {
 };
 var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$style, 'align-items', 'center');
 var $author$project$Config$maxPartyMembers = 4;
-var $author$project$Piece$name = function (piece) {
-	switch (piece.$) {
-		case 'King':
-			return 'King';
-		case 'Rook':
-			return 'Rook';
-		case 'Bishop':
-			return 'Bishop';
-		case 'Knight':
-			return 'Knight';
-		case 'Pawn':
-			return 'Pawn';
-		default:
-			return 'Queen';
-	}
-};
 var $author$project$Piece$promote = function (piece) {
 	switch (piece.$) {
 		case 'Pawn':
@@ -8215,23 +8258,94 @@ var $author$project$Main$view = function (model) {
 					_List_fromArray(
 						[
 							A2(
+							$Orasund$elm_layout$Layout$row,
+							_List_fromArray(
+								[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
+							_List_fromArray(
+								[
+									A2(
+									$Orasund$elm_layout$Layout$text,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
+											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)')
+										]),
+									'Level ' + $elm$core$String$fromInt(model.levelCount)),
+									A2(
+									$Orasund$elm_layout$Layout$text,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
+											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)')
+										]),
+									'Score ' + $elm$core$String$fromInt(model.score))
+								])),
+							A2(
 							$author$project$View$Level$toHtml,
 							{movementOverride: model.movementOverride, onSelect: $author$project$Main$Select, selected: model.selected},
 							model.level),
 							$author$project$Level$isWon(model.level) ? A2(
-							$Orasund$elm_layout$Layout$textButton,
-							_List_Nil,
-							{
-								label: 'Next Level',
-								onPress: $elm$core$Maybe$Just($author$project$Main$EndLevel)
-							}) : ($author$project$Level$isLost(model.level) ? A2(
+							$Orasund$elm_layout$Layout$column,
+							_List_fromArray(
+								[
+									$Orasund$elm_layout$Layout$gap(16)
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$Orasund$elm_layout$Layout$column,
+									_List_fromArray(
+										[
+											$Orasund$elm_layout$Layout$gap(8),
+											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)'),
+											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)')
+										]),
+									A2(
+										$elm$core$List$map,
+										function (_v3) {
+											var square = _v3.b;
+											return A2(
+												$Orasund$elm_layout$Layout$row,
+												_List_fromArray(
+													[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
+												_List_fromArray(
+													[
+														A2(
+														$Orasund$elm_layout$Layout$text,
+														_List_Nil,
+														$author$project$Piece$name(square.piece)),
+														A2(
+														$Orasund$elm_layout$Layout$text,
+														_List_Nil,
+														function (n) {
+															return (n === 1) ? '1 Point' : ($elm$core$String$fromInt(n) + ' Points');
+														}(
+															$author$project$Piece$value(square.piece)))
+													]));
+										},
+										$elm$core$Dict$toList(
+											A2(
+												$elm$core$Dict$filter,
+												F2(
+													function (_v2, square) {
+														return !square.isWhite;
+													}),
+												model.level.board)))),
+									A2(
+									$Orasund$elm_layout$Layout$textButton,
+									_List_Nil,
+									{
+										label: 'Next Level',
+										onPress: $elm$core$Maybe$Just($author$project$Main$EndLevel)
+									})
+								])) : ($author$project$Level$isLost(model.level) ? A2(
 							$Orasund$elm_layout$Layout$textButton,
 							_List_fromArray(
 								[
 									A2($elm$html$Html$Attributes$style, 'background-color', 'var(--red-color)')
 								]),
 							{
-								label: 'You died on level ' + $elm$core$String$fromInt(model.levelCount),
+								label: 'You died',
 								onPress: $elm$core$Maybe$Just($author$project$Main$Restart)
 							}) : A2(
 							$author$project$View$Artefact$toHtml,

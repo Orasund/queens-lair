@@ -279,10 +279,11 @@ isWon : Level -> Bool
 isWon game =
     (game.board
         |> Dict.filter
-            (\( _, y ) square ->
+            (\( x, y ) square ->
                 (square.piece == King)
                     && square.isWhite
                     && (y == 0)
+                    && isSave { isWhite = True, pos = ( x, y ) } game
             )
         |> Dict.isEmpty
         |> not

@@ -1,15 +1,36 @@
 {
     "name": "Queens Lair",
     "short_name": "Queens Lair",
+    "id": "QueensLair",
     "start_url": ".",
-    "display": "standalone",
+    "display": "fullscreen",
     "background_color": "#000",
     "description": "A mix between Roguelike and Chess",
     "icons": [
         {
             "src": "favicon.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         }
-    ]
+    ],
+    "related_applications": [
+        {
+            "platform": "webapp",
+            "url": "https://orasund.github.io/queens-lair/manifest.json"
+        }
+    ],
+    "edge_side_panel": {},
+    "handle_links": "auto",
+    "display_override": [
+        "window-controls-overlay",
+        "standalone",
+        "browser"
+    ],
+    "orientation": "portrait",
+    "theme_color": "#fcff00",
+    "categories": [
+        "games"
+    ],
+    "lang": "en"
 }

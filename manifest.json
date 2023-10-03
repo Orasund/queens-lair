@@ -2,7 +2,7 @@
     "name": "Queens Lair",
     "short_name": "Queens Lair",
     "id": "QueensLair",
-    "start_url": ".",
+    "start_url": "/",
     "display": "fullscreen",
     "background_color": "#000",
     "description": "A mix between Roguelike and Chess",

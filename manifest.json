@@ -1,0 +1,15 @@
+{
+    "name": "Queens Lair",
+    "short_name": "Queens Lair",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#000",
+    "description": "A mix between Roguelike and Chess",
+    "icons": [
+        {
+            "src": "favicon.png",
+            "size": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

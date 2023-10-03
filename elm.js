@@ -7810,6 +7810,12 @@ var $author$project$View$Spritesheet$toImage = F2(
 				width: $author$project$Config$sqaureSize
 			});
 	});
+var $author$project$View$Spritesheet$goal = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toImage,
+		attrs,
+		_Utils_Tuple2(1, 1));
+};
 var $author$project$View$Spritesheet$loot = function (attrs) {
 	return A2(
 		$author$project$View$Spritesheet$toImage,
@@ -8020,6 +8026,13 @@ var $author$project$View$Level$toHtml = F2(
 													isValid ? '#fcff00' : 'transparent')
 												]),
 											$Orasund$elm_layout$Layout$none),
+											(!y) ? $author$project$View$Spritesheet$goal(
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+													A2($elm$html$Html$Attributes$style, 'top', '0'),
+													A2($elm$html$Html$Attributes$style, 'left', '0')
+												])) : $Orasund$elm_layout$Layout$none,
 											function () {
 											var _v0 = A2(
 												$elm$core$Dict$get,

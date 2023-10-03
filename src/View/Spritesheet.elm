@@ -5,6 +5,10 @@ import Html exposing (Attribute, Html)
 import Pixel
 
 
+goal attrs =
+    toImage attrs ( 1, 1 )
+
+
 loot attrs =
     toImage attrs ( 1, 0 )
 

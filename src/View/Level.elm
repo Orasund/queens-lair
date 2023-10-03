@@ -80,6 +80,15 @@ toHtml args game =
                                     |> (\c -> Html.Attributes.style "border" (String.fromInt (Config.sqaureSize // 16) ++ "px solid " ++ c))
                                 ]
                                 Layout.none
+                            , if y == 0 then
+                                View.Spritesheet.goal
+                                    [ Html.Attributes.style "position" "absolute"
+                                    , Html.Attributes.style "top" "0"
+                                    , Html.Attributes.style "left" "0"
+                                    ]
+
+                              else
+                                Layout.none
                             , case game.board |> Dict.get ( x, y ) of
                                 Just square ->
                                     View.Square.toHtml

@@ -12,9 +12,9 @@
     <script>
         var app = Elm.Main.init({ node: document.querySelector('main') })
 
-        if ('serviceWorker' in navigator) {
+        if (typeof navigator.serviceWorker !== 'undefined') {
             navigator.serviceWorker
-                .register('/service_worker.js')
+                .register('service_worker.js')
                 .then(function () { console.log("Service Worker Registered"); });
         }
         // you can use ports and stuff here

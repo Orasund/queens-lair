@@ -32,5 +32,20 @@
     "categories": [
         "games"
     ],
-    "lang": "en"
+    "lang": "en",
+    "launch_handler": {
+        "client_mode": [
+            "navigate-existing",
+            "auto"
+        ]
+    },
+    "dir": "ltr",
+    "scope": "https://orasund.github.io",
+    "widgets": [],
+    "shortcuts": [
+        {
+            "name": "Start Game",
+            "url": "/"
+        }
+    ]
 }

@@ -2,9 +2,11 @@
     "name": "Queens Lair",
     "short_name": "Queens Lair",
     "id": "QueensLair",
-    "start_url": "/queens-lair",
+    "scope": "/queens-lair/",
+    "start_url": "/queens-lair/",
     "display": "fullscreen",
     "background_color": "#000",
+    "theme_color": "#fcff00",
     "description": "A mix between Roguelike and Chess",
     "icons": [
         {
@@ -28,7 +30,6 @@
         "browser"
     ],
     "orientation": "portrait",
-    "theme_color": "#fcff00",
     "categories": [
         "games"
     ],
@@ -40,13 +41,9 @@
         ]
     },
     "dir": "ltr",
-    "scope": "https://orasund.github.io/queens-lair",
     "widgets": [],
-    "shortcuts": [
-        {
-            "name": "Start Game",
-            "url": "/"
-        }
-    ],
-    "file_handlers": []
+    "shortcuts": [],
+    "file_handlers": [],
+    "protocol_handlers": [],
+    "prefer_related_applications": false
 }

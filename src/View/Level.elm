@@ -6,7 +6,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes
 import Layout
-import Level exposing (Level, isWon)
+import Level exposing (Level, isKingBehindLine)
 import Piece exposing (Piece(..))
 import Set
 import View.Spritesheet
@@ -127,6 +127,16 @@ toHtml args game =
                                                     else if isValidMove { from = from, to = ( x, y ) } then
                                                         args.onSelect (Just ( x, y )) |> Just
 
+                                                    else if
+                                                        (game.board
+                                                            |> Dict.get ( x, y )
+                                                            |> Maybe.map .isWhite
+                                                            |> Maybe.withDefault False
+                                                        )
+                                                            && not (isKingBehindLine game)
+                                                    then
+                                                        args.onSelect (Just ( x, y )) |> Just
+
                                                     else
                                                         Nothing
 
@@ -137,7 +147,7 @@ toHtml args game =
                                                             |> Maybe.map .isWhite
                                                             |> Maybe.withDefault False
                                                         )
-                                                            && not (isWon game)
+                                                            && not (isKingBehindLine game)
                                                     then
                                                         args.onSelect (Just ( x, y )) |> Just
 

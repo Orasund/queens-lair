@@ -10,7 +10,8 @@ type Action
     | RemoveArtefactAnd Artefact Action
     | AddArtefactAnd Artefact Action
     | OverrideMovement Movement
-    | PlaceChest
+    | PlaceChest Action
+    | PlacePiece Piece
     | UndoMove
     | FindArtefact ( Int, Int )
     | EndMove
@@ -25,12 +26,6 @@ type Movement
 fromArtefact : Artefact -> Action
 fromArtefact artefact =
     case artefact of
-        EscapeRope ->
-            ResetLevel
-
-        PoliceBox ->
-            UndoMove
-
         Coconuts ->
             Knight
                 |> PieceMovement
@@ -55,4 +50,7 @@ fromArtefact artefact =
                 |> OverrideMovement
 
         PocketMoney ->
-            PlaceChest
+            PlaceChest (PlaceChest DoNothing)
+
+        TinSoldier ->
+            PlacePiece Pawn

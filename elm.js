@@ -5695,8 +5695,10 @@ var $author$project$Level$fromPieces = function (args) {
 };
 var $author$project$Piece$Bishop = {$: 'Bishop'};
 var $author$project$Piece$Knight = {$: 'Knight'};
+var $author$project$Piece$Queen = {$: 'Queen'};
+var $author$project$Piece$Rook = {$: 'Rook'};
 var $author$project$Piece$list = _List_fromArray(
-	[$author$project$Piece$King, $author$project$Piece$Bishop, $author$project$Piece$Knight, $author$project$Piece$Pawn]);
+	[$author$project$Piece$Queen, $author$project$Piece$Rook, $author$project$Piece$Bishop, $author$project$Piece$Knight, $author$project$Piece$Pawn]);
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -5878,7 +5880,7 @@ var $author$project$Action$FindArtefact = function (a) {
 var $author$project$Overlay$ShopOverlay = function (a) {
 	return {$: 'ShopOverlay', a: a};
 };
-var $author$project$Artefact$EscapeRope = {$: 'EscapeRope'};
+var $author$project$Artefact$FingerPistol = {$: 'FingerPistol'};
 var $author$project$Overlay$FoundArtefactOverlay = function (a) {
 	return {$: 'FoundArtefactOverlay', a: a};
 };
@@ -6325,15 +6327,45 @@ var $elm$core$Set$insert = F2(
 var $elm$core$Set$fromList = function (list) {
 	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
 };
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var $author$project$Artefact$Bible = {$: 'Bible'};
 var $author$project$Artefact$Coconuts = {$: 'Coconuts'};
 var $author$project$Artefact$DowsingRod = {$: 'DowsingRod'};
-var $author$project$Artefact$FingerPistol = {$: 'FingerPistol'};
 var $author$project$Artefact$IronThrone = {$: 'IronThrone'};
 var $author$project$Artefact$PocketMoney = {$: 'PocketMoney'};
-var $author$project$Artefact$PoliceBox = {$: 'PoliceBox'};
+var $author$project$Artefact$TinSoldier = {$: 'TinSoldier'};
 var $author$project$Artefact$list = _List_fromArray(
-	[$author$project$Artefact$EscapeRope, $author$project$Artefact$PoliceBox, $author$project$Artefact$Coconuts, $author$project$Artefact$FingerPistol, $author$project$Artefact$IronThrone, $author$project$Artefact$DowsingRod, $author$project$Artefact$Bible, $author$project$Artefact$PocketMoney]);
+	[$author$project$Artefact$Coconuts, $author$project$Artefact$FingerPistol, $author$project$Artefact$IronThrone, $author$project$Artefact$DowsingRod, $author$project$Artefact$Bible, $author$project$Artefact$PocketMoney, $author$project$Artefact$TinSoldier]);
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6366,10 +6398,6 @@ var $elm$core$List$member = F2(
 	});
 var $author$project$Artefact$name = function (item) {
 	switch (item.$) {
-		case 'EscapeRope':
-			return 'Escape Rope';
-		case 'PoliceBox':
-			return 'Police Box';
 		case 'Coconuts':
 			return 'Coconuts';
 		case 'FingerPistol':
@@ -6380,8 +6408,10 @@ var $author$project$Artefact$name = function (item) {
 			return 'Dowsing Rod';
 		case 'Bible':
 			return 'Bible';
-		default:
+		case 'PocketMoney':
 			return 'Pocket Money';
+		default:
+			return 'Tin Soldier';
 	}
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6543,7 +6573,7 @@ var $author$project$Main$applyAction = F2(
 									var tail = _v3.b;
 									return A2($elm$random$Random$uniform, head, tail);
 								} else {
-									return $elm$random$Random$constant($author$project$Artefact$EscapeRope);
+									return $elm$random$Random$constant($author$project$Artefact$FingerPistol);
 								}
 							}(),
 							model.seed)),
@@ -6569,45 +6599,100 @@ var $author$project$Main$applyAction = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'PlaceChest':
-				var _v6 = $elm$core$Set$toList(
-					A2(
-						$elm$core$Set$diff,
-						$elm$core$Set$fromList(
+				var action2 = action.a;
+				return A2(
+					$author$project$Main$applyAction,
+					action2,
+					function () {
+						var _v6 = $elm$core$Set$toList(
 							A2(
-								$elm$core$List$concatMap,
-								function (x) {
-									return A2(
-										$elm$core$List$map,
-										$elm$core$Tuple$pair(x),
-										A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1));
-								},
-								A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1))),
-						model.level.loot));
-				if (_v6.b) {
-					var head = _v6.a;
-					var tail = _v6.b;
-					return function (_v7) {
-						var pos = _v7.a;
-						var seed = _v7.b;
-						return _Utils_Tuple2(
-							_Utils_update(
+								$elm$core$Set$diff,
+								$elm$core$Set$fromList(
+									A2(
+										$elm$core$List$concatMap,
+										function (x) {
+											return A2(
+												$elm$core$List$map,
+												$elm$core$Tuple$pair(x),
+												A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1));
+										},
+										A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1))),
+								model.level.loot));
+						if (_v6.b) {
+							var head = _v6.a;
+							var tail = _v6.b;
+							return function (_v7) {
+								var pos = _v7.a;
+								var seed = _v7.b;
+								return _Utils_update(
+									model,
+									{
+										level: function (l) {
+											return _Utils_update(
+												l,
+												{
+													loot: A2($elm$core$Set$insert, pos, l.loot)
+												});
+										}(model.level),
+										seed: seed
+									});
+							}(
+								A2(
+									$elm$random$Random$step,
+									A2($elm$random$Random$uniform, head, tail),
+									model.seed));
+						} else {
+							return model;
+						}
+					}());
+			case 'PlacePiece':
+				var piece = action.a;
+				var _v8 = A2(
+					$elm$core$List$filter,
+					function (pos) {
+						return _Utils_eq(
+							$elm$core$Maybe$Nothing,
+							A2($elm$core$Dict$get, pos, model.level.board));
+					},
+					A2(
+						$elm$core$List$concatMap,
+						function (x) {
+							return A2(
+								$elm$core$List$map,
+								$elm$core$Tuple$pair(x),
+								A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1));
+						},
+						A2($elm$core$List$range, 0, $author$project$Config$boardSize - 1)));
+				if (_v8.b) {
+					var head = _v8.a;
+					var tail = _v8.b;
+					return function (m) {
+						return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
+					}(
+						function (_v9) {
+							var pos = _v9.a;
+							var seed = _v9.b;
+							return _Utils_update(
 								model,
 								{
 									level: function (l) {
 										return _Utils_update(
 											l,
 											{
-												loot: A2($elm$core$Set$insert, pos, l.loot)
+												board: A3(
+													$elm$core$Dict$insert,
+													pos,
+													{isWhite: true, piece: piece},
+													l.board)
 											});
 									}(model.level),
 									seed: seed
-								}),
-							$elm$core$Platform$Cmd$none);
-					}(
-						A2(
-							$elm$random$Random$step,
-							A2($elm$random$Random$uniform, head, tail),
-							model.seed));
+								});
+						}(
+							A2(
+								$elm$random$Random$step,
+								A2($elm$random$Random$uniform, head, tail),
+								model.seed)));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6648,37 +6733,6 @@ var $elm$core$List$all = F2(
 			$elm$core$List$any,
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -6730,7 +6784,7 @@ var $author$project$Piece$movement = function (piece) {
 								_Utils_Tuple2(i, 0)
 							]);
 					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 1)));
 		case 'Bishop':
 			return $elm$core$Set$fromList(
 				A2(
@@ -6744,7 +6798,7 @@ var $author$project$Piece$movement = function (piece) {
 								_Utils_Tuple2(-i, -i)
 							]);
 					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 1)));
 		case 'Queen':
 			return $elm$core$Set$fromList(
 				A2(
@@ -6760,7 +6814,7 @@ var $author$project$Piece$movement = function (piece) {
 								_Utils_Tuple2(-i, -i)
 							]);
 					},
-					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 2)));
+					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 1)));
 		case 'Knight':
 			return $elm$core$Set$fromList(
 				_List_fromArray(
@@ -6952,8 +7006,8 @@ var $author$project$Level$isSave = F2(
 						}),
 					game.board)));
 	});
-var $author$project$Level$isWon = function (game) {
-	return (!$elm$core$Dict$isEmpty(
+var $author$project$Level$isKingBehindLine = function (level) {
+	return !$elm$core$Dict$isEmpty(
 		A2(
 			$elm$core$Dict$filter,
 			F2(
@@ -6966,13 +7020,16 @@ var $author$project$Level$isWon = function (game) {
 							isWhite: true,
 							pos: _Utils_Tuple2(x, y)
 						},
-						game)));
+						level)));
 				}),
-			game.board))) || $elm$core$Dict$isEmpty(
+			level.board));
+};
+var $author$project$Level$isWon = function (game) {
+	return $author$project$Level$isKingBehindLine(game) || $elm$core$Dict$isEmpty(
 		A2(
 			$elm$core$Dict$filter,
 			F2(
-				function (_v1, square) {
+				function (_v0, square) {
 					return !square.isWhite;
 				}),
 			game.board));
@@ -7206,7 +7263,7 @@ var $author$project$Level$possibleMovesFor = F2(
 	});
 var $author$project$Level$possibleMoves = F2(
 	function (args, game) {
-		return ($author$project$Level$isWon(game) || $author$project$Level$isLost(game)) ? _List_Nil : A2(
+		return ((args.isYourTurn && $author$project$Level$isWon(game)) || (((!args.isYourTurn) && $author$project$Level$isKingBehindLine(game)) || $author$project$Level$isLost(game))) ? _List_Nil : A2(
 			$elm$core$List$concatMap,
 			function (pos) {
 				return A2(
@@ -7232,22 +7289,22 @@ var $author$project$Level$findNextMove = function (game) {
 		{apply: $author$project$Level$move, evaluate: $author$project$Level$evaluateForBlack, possibleMoves: $author$project$Level$possibleMoves, searchDepth: 5},
 		game);
 };
+var $author$project$Action$DoNothing = {$: 'DoNothing'};
 var $author$project$Action$OverrideMovement = function (a) {
 	return {$: 'OverrideMovement', a: a};
 };
 var $author$project$Action$PieceMovement = function (a) {
 	return {$: 'PieceMovement', a: a};
 };
-var $author$project$Action$PlaceChest = {$: 'PlaceChest'};
-var $author$project$Action$ResetLevel = {$: 'ResetLevel'};
+var $author$project$Action$PlaceChest = function (a) {
+	return {$: 'PlaceChest', a: a};
+};
+var $author$project$Action$PlacePiece = function (a) {
+	return {$: 'PlacePiece', a: a};
+};
 var $author$project$Action$ToChest = {$: 'ToChest'};
-var $author$project$Action$UndoMove = {$: 'UndoMove'};
 var $author$project$Action$fromArtefact = function (artefact) {
 	switch (artefact.$) {
-		case 'EscapeRope':
-			return $author$project$Action$ResetLevel;
-		case 'PoliceBox':
-			return $author$project$Action$UndoMove;
 		case 'Coconuts':
 			return $author$project$Action$OverrideMovement(
 				$author$project$Action$PieceMovement($author$project$Piece$Knight));
@@ -7262,8 +7319,11 @@ var $author$project$Action$fromArtefact = function (artefact) {
 		case 'Bible':
 			return $author$project$Action$OverrideMovement(
 				$author$project$Action$PieceMovement($author$project$Piece$Bishop));
+		case 'PocketMoney':
+			return $author$project$Action$PlaceChest(
+				$author$project$Action$PlaceChest($author$project$Action$DoNothing));
 		default:
-			return $author$project$Action$PlaceChest;
+			return $author$project$Action$PlacePiece($author$project$Piece$Pawn);
 	}
 };
 var $author$project$Main$update = F2(
@@ -7288,7 +7348,18 @@ var $author$project$Main$update = F2(
 							$elm$core$Platform$Cmd$none);
 					} else {
 						var to = maybe.a;
-						return A2(
+						return _Utils_eq(
+							$elm$core$Maybe$Just(true),
+							A2(
+								$elm$core$Maybe$map,
+								function ($) {
+									return $.isWhite;
+								},
+								A2($elm$core$Dict$get, to, model.level.board))) ? _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{selected: maybe}),
+							$elm$core$Platform$Cmd$none) : A2(
 							$author$project$Main$applyAction,
 							A2($elm$core$Set$member, to, model.level.loot) ? $author$project$Action$FindArtefact(to) : $author$project$Action$EndMove,
 							function (level) {
@@ -7421,7 +7492,6 @@ var $author$project$Main$Activate = function (a) {
 var $author$project$Main$CloseOverlay = function (a) {
 	return {$: 'CloseOverlay', a: a};
 };
-var $author$project$Action$DoNothing = {$: 'DoNothing'};
 var $author$project$Main$EndLevel = {$: 'EndLevel'};
 var $author$project$Main$Restart = {$: 'Restart'};
 var $author$project$Main$Select = function (a) {
@@ -7470,10 +7540,6 @@ var $Orasund$elm_layout$Layout$gap = function (n) {
 };
 var $author$project$Artefact$description = function (item) {
 	switch (item.$) {
-		case 'EscapeRope':
-			return 'Restart the level';
-		case 'PoliceBox':
-			return 'Undo your last move';
 		case 'Coconuts':
 			return 'Move one piece like a knight';
 		case 'FingerPistol':
@@ -7484,8 +7550,10 @@ var $author$project$Artefact$description = function (item) {
 			return 'Move one piece to the chest';
 		case 'Bible':
 			return 'Move one piece like a bishop';
+		case 'PocketMoney':
+			return 'Spawn two chests';
 		default:
-			return 'Spawn another chest';
+			return 'Add a white pawn to the board';
 	}
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7521,6 +7589,7 @@ var $author$project$View$Artefact$info = function (artefact) {
 			]));
 };
 var $author$project$Config$maxArtefacts = 2;
+var $Orasund$elm_layout$Layout$none = $elm$html$Html$text('');
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -7586,42 +7655,61 @@ var $author$project$View$Overlay$foundArtefact = F2(
 			$Orasund$elm_layout$Layout$column,
 			_List_fromArray(
 				[
-					$Orasund$elm_layout$Layout$gap(8),
-					A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
-					A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+					$Orasund$elm_layout$Layout$gap(16)
 				]),
 			_List_fromArray(
 				[
-					A2($Orasund$elm_layout$Layout$text, _List_Nil, 'You have found the artefact'),
-					$author$project$View$Artefact$info(artefact),
+					A2(
+					$Orasund$elm_layout$Layout$text,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
+							A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+						]),
+					'You have found the artefact ' + ($author$project$Artefact$name(artefact) + '.')),
+					A2(
+					$Orasund$elm_layout$Layout$column,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$author$project$View$Artefact$info(artefact),
+							(_Utils_cmp(
+							$elm$core$List$length(args.artefacts),
+							$author$project$Config$maxArtefacts) < 0) ? A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_Nil,
+							{
+								label: 'Take',
+								onPress: $elm$core$Maybe$Just(
+									args.onCloseOverlay(
+										A2($author$project$Action$AddArtefactAnd, artefact, $author$project$Action$EndMove)))
+							}) : A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_Nil,
+							{
+								label: 'Discard ' + $author$project$Artefact$name(artefact),
+								onPress: $elm$core$Maybe$Just(
+									args.onCloseOverlay($author$project$Action$EndMove))
+							})
+						])),
 					(_Utils_cmp(
 					$elm$core$List$length(args.artefacts),
-					$author$project$Config$maxArtefacts) < 0) ? A2(
-					$Orasund$elm_layout$Layout$textButton,
-					_List_Nil,
-					{
-						label: 'Take',
-						onPress: $elm$core$Maybe$Just(
-							args.onCloseOverlay(
-								A2($author$project$Action$AddArtefactAnd, artefact, $author$project$Action$EndMove)))
-					}) : A2(
+					$author$project$Config$maxArtefacts) < 0) ? $Orasund$elm_layout$Layout$none : A2(
 					$Orasund$elm_layout$Layout$column,
 					_List_fromArray(
 						[
-							$Orasund$elm_layout$Layout$gap(8)
+							$Orasund$elm_layout$Layout$gap(16)
 						]),
-					_List_fromArray(
-						[
-							A2(
-							$Orasund$elm_layout$Layout$column,
-							_List_fromArray(
-								[
-									$Orasund$elm_layout$Layout$gap(8)
-								]),
-							A2(
-								$elm$core$List$map,
-								function (oldArtefact) {
-									return A2(
+					A2(
+						$elm$core$List$map,
+						function (oldArtefact) {
+							return A2(
+								$Orasund$elm_layout$Layout$column,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$author$project$View$Artefact$info(oldArtefact),
+										A2(
 										$Orasund$elm_layout$Layout$textButton,
 										_List_Nil,
 										{
@@ -7632,18 +7720,10 @@ var $author$project$View$Overlay$foundArtefact = F2(
 														$author$project$Action$RemoveArtefactAnd,
 														oldArtefact,
 														A2($author$project$Action$AddArtefactAnd, artefact, $author$project$Action$EndMove))))
-										});
-								},
-								args.artefacts)),
-							A2(
-							$Orasund$elm_layout$Layout$textButton,
-							_List_Nil,
-							{
-								label: 'Discard ' + $author$project$Artefact$name(artefact),
-								onPress: $elm$core$Maybe$Just(
-									args.onCloseOverlay($author$project$Action$EndMove))
-							})
-						]))
+										})
+									]));
+						},
+						args.artefacts))
 				]));
 	});
 var $author$project$Piece$name = function (piece) {
@@ -7823,7 +7903,6 @@ var $author$project$View$Spritesheet$loot = function (attrs) {
 		_Utils_Tuple2(1, 0));
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $Orasund$elm_layout$Layout$none = $elm$html$Html$text('');
 var $author$project$View$Spritesheet$blackBishop = function (attrs) {
 	return A2(
 		$author$project$View$Spritesheet$toImage,
@@ -8097,7 +8176,21 @@ var $author$project$View$Level$toHtml = F2(
 																	}) ? $elm$core$Maybe$Just(
 																	args.onSelect(
 																		$elm$core$Maybe$Just(
-																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing);
+																			_Utils_Tuple2(x, y)))) : ((A2(
+																	$elm$core$Maybe$withDefault,
+																	false,
+																	A2(
+																		$elm$core$Maybe$map,
+																		function ($) {
+																			return $.isWhite;
+																		},
+																		A2(
+																			$elm$core$Dict$get,
+																			_Utils_Tuple2(x, y),
+																			game.board))) && (!$author$project$Level$isKingBehindLine(game))) ? $elm$core$Maybe$Just(
+																	args.onSelect(
+																		$elm$core$Maybe$Just(
+																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing));
 															} else {
 																return (A2(
 																	$elm$core$Maybe$withDefault,
@@ -8110,7 +8203,7 @@ var $author$project$View$Level$toHtml = F2(
 																		A2(
 																			$elm$core$Dict$get,
 																			_Utils_Tuple2(x, y),
-																			game.board))) && (!$author$project$Level$isWon(game))) ? $elm$core$Maybe$Just(
+																			game.board))) && (!$author$project$Level$isKingBehindLine(game))) ? $elm$core$Maybe$Just(
 																	args.onSelect(
 																		$elm$core$Maybe$Just(
 																			_Utils_Tuple2(x, y)))) : $elm$core$Maybe$Nothing;
@@ -8297,7 +8390,7 @@ var $author$project$Main$view = function (model) {
 							$author$project$View$Level$toHtml,
 							{movementOverride: model.movementOverride, onSelect: $author$project$Main$Select, selected: model.selected},
 							model.level),
-							$author$project$Level$isWon(model.level) ? A2(
+							$author$project$Level$isKingBehindLine(model.level) ? A2(
 							$Orasund$elm_layout$Layout$column,
 							_List_fromArray(
 								[

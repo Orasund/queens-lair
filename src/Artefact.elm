@@ -2,38 +2,30 @@ module Artefact exposing (..)
 
 
 type Artefact
-    = EscapeRope
-    | PoliceBox
-    | Coconuts
+    = Coconuts
     | FingerPistol
     | IronThrone
     | DowsingRod
     | Bible
     | PocketMoney
+    | TinSoldier
 
 
 list : List Artefact
 list =
-    [ EscapeRope
-    , PoliceBox
-    , Coconuts
+    [ Coconuts
     , FingerPistol
     , IronThrone
     , DowsingRod
     , Bible
     , PocketMoney
+    , TinSoldier
     ]
 
 
 name : Artefact -> String
 name item =
     case item of
-        EscapeRope ->
-            "Escape Rope"
-
-        PoliceBox ->
-            "Police Box"
-
         Coconuts ->
             "Coconuts"
 
@@ -52,16 +44,13 @@ name item =
         PocketMoney ->
             "Pocket Money"
 
+        TinSoldier ->
+            "Tin Soldier"
+
 
 description : Artefact -> String
 description item =
     case item of
-        EscapeRope ->
-            "Restart the level"
-
-        PoliceBox ->
-            "Undo your last move"
-
         Coconuts ->
             "Move one piece like a knight"
 
@@ -78,4 +67,7 @@ description item =
             "Move one piece like a bishop"
 
         PocketMoney ->
-            "Spawn another chest"
+            "Spawn two chests"
+
+        TinSoldier ->
+            "Add a white pawn to the board"

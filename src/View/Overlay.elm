@@ -12,22 +12,42 @@ import View.Artefact
 
 foundArtefact : { onCloseOverlay : Action -> msg, artefacts : List Artefact } -> Artefact -> Html msg
 foundArtefact args artefact =
-    [ "You have found the artefact" |> Layout.text []
-    , View.Artefact.info artefact
+    [ "You have found the artefact "
+        ++ Artefact.name artefact
+        ++ "."
+        |> Layout.text
+            [ Html.Attributes.style "padding" "var(--space)"
+            , Html.Attributes.style "background-color" "var(--dark-gray-color)"
+            ]
+    , [ View.Artefact.info artefact
+      , if List.length args.artefacts < Config.maxArtefacts then
+            Layout.textButton []
+                { label = "Take"
+                , onPress =
+                    AddArtefactAnd artefact EndMove
+                        |> args.onCloseOverlay
+                        |> Just
+                }
+
+        else
+            Layout.textButton []
+                { label = "Discard " ++ Artefact.name artefact
+                , onPress =
+                    EndMove
+                        |> args.onCloseOverlay
+                        |> Just
+                }
+      ]
+        |> Layout.column []
     , if List.length args.artefacts < Config.maxArtefacts then
-        Layout.textButton []
-            { label = "Take"
-            , onPress =
-                AddArtefactAnd artefact EndMove
-                    |> args.onCloseOverlay
-                    |> Just
-            }
+        Layout.none
 
       else
-        [ args.artefacts
+        args.artefacts
             |> List.map
                 (\oldArtefact ->
-                    Layout.textButton []
+                    [ View.Artefact.info oldArtefact
+                    , Layout.textButton []
                         { label = "Discard " ++ Artefact.name oldArtefact
                         , onPress =
                             RemoveArtefactAnd oldArtefact
@@ -37,22 +57,13 @@ foundArtefact args artefact =
                                 |> args.onCloseOverlay
                                 |> Just
                         }
+                    ]
+                        |> Layout.column []
                 )
-            |> Layout.column [ Layout.gap 8 ]
-        , Layout.textButton []
-            { label = "Discard " ++ Artefact.name artefact
-            , onPress =
-                EndMove
-                    |> args.onCloseOverlay
-                    |> Just
-            }
-        ]
-            |> Layout.column [ Layout.gap 8 ]
+            |> Layout.column [ Layout.gap 16 ]
     ]
         |> Layout.column
-            [ Layout.gap 8
-            , Html.Attributes.style "padding" "var(--space)"
-            , Html.Attributes.style "background-color" "var(--dark-gray-color)"
+            [ Layout.gap 16
             ]
 
 

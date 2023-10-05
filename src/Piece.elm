@@ -15,7 +15,7 @@ type Piece
 
 list : List Piece
 list =
-    [ King, Bishop, Knight, Pawn ]
+    [ Queen, Rook, Bishop, Knight, Pawn ]
 
 
 name : Piece -> String
@@ -56,7 +56,7 @@ movement piece =
                 |> Set.fromList
 
         Rook ->
-            List.range 1 (Config.boardSize - 2)
+            List.range 1 (Config.boardSize - 1)
                 |> List.concatMap
                     (\i ->
                         [ ( 0, i ), ( i, 0 ) ]
@@ -64,7 +64,7 @@ movement piece =
                 |> Set.fromList
 
         Bishop ->
-            List.range 1 (Config.boardSize - 2)
+            List.range 1 (Config.boardSize - 1)
                 |> List.concatMap
                     (\i ->
                         [ ( i, i ), ( -i, i ), ( i, -i ), ( -i, -i ) ]
@@ -72,7 +72,7 @@ movement piece =
                 |> Set.fromList
 
         Queen ->
-            List.range 1 (Config.boardSize - 2)
+            List.range 1 (Config.boardSize - 1)
                 |> List.concatMap
                     (\i ->
                         [ ( 0, i ), ( i, 0 ), ( i, i ), ( -i, i ), ( i, -i ), ( -i, -i ) ]

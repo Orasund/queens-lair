@@ -144,7 +144,7 @@ applyAction action model =
                         Random.uniform head tail
 
                     [] ->
-                        Random.constant EscapeRope
+                        Random.constant FingerPistol
                 )
                 model.seed
                 |> (\( artefact, seed ) ->
@@ -168,8 +168,8 @@ applyAction action model =
             , Cmd.none
             )
 
-        PlaceChest ->
-            case
+        PlaceChest action2 ->
+            (case
                 Set.diff
                     (List.range 0 (Config.boardSize - 1)
                         |> List.concatMap
@@ -181,19 +181,50 @@ applyAction action model =
                     )
                     model.level.loot
                     |> Set.toList
-            of
+             of
                 head :: tail ->
                     Random.step (Random.uniform head tail) model.seed
                         |> (\( pos, seed ) ->
-                                ( { model
+                                { model
                                     | seed = seed
                                     , level =
                                         model.level
                                             |> (\l -> { l | loot = Set.insert pos l.loot })
-                                  }
-                                , Cmd.none
-                                )
+                                }
                            )
+
+                [] ->
+                    model
+            )
+                |> applyAction action2
+
+        PlacePiece piece ->
+            case
+                List.range 0 (Config.boardSize - 1)
+                    |> List.concatMap
+                        (\x ->
+                            List.range 0 (Config.boardSize - 1)
+                                |> List.map (Tuple.pair x)
+                        )
+                    |> List.filter (\pos -> model.level.board |> Dict.get pos |> (==) Nothing)
+            of
+                head :: tail ->
+                    Random.step (Random.uniform head tail) model.seed
+                        |> (\( pos, seed ) ->
+                                { model
+                                    | seed = seed
+                                    , level =
+                                        model.level
+                                            |> (\l ->
+                                                    { l
+                                                        | board =
+                                                            l.board
+                                                                |> Dict.insert pos { isWhite = True, piece = piece }
+                                                    }
+                                               )
+                                }
+                           )
+                        |> (\m -> ( m, Cmd.none ))
 
                 [] ->
                     ( model, Cmd.none )
@@ -216,21 +247,30 @@ update msg model =
                             ( { model | selected = maybe }, Cmd.none )
 
                         Just to ->
-                            model.level
-                                |> Level.move { from = selected, to = to }
-                                |> (\level ->
-                                        { model
-                                            | level = level
-                                            , selected = Nothing
-                                        }
-                                   )
-                                |> applyAction
-                                    (if Set.member to model.level.loot then
-                                        FindArtefact to
+                            if
+                                model.level.board
+                                    |> Dict.get to
+                                    |> Maybe.map .isWhite
+                                    |> (==) (Just True)
+                            then
+                                ( { model | selected = maybe }, Cmd.none )
 
-                                     else
-                                        EndMove
-                                    )
+                            else
+                                model.level
+                                    |> Level.move { from = selected, to = to }
+                                    |> (\level ->
+                                            { model
+                                                | level = level
+                                                , selected = Nothing
+                                            }
+                                       )
+                                    |> applyAction
+                                        (if Set.member to model.level.loot then
+                                            FindArtefact to
+
+                                         else
+                                            EndMove
+                                        )
 
         RequestOpponentMove ->
             (case model.level |> Level.findNextMove of
@@ -336,7 +376,7 @@ view model =
                 , movementOverride = model.movementOverride
                 }
                 model.level
-            , if Level.isWon model.level then
+            , if Level.isKingBehindLine model.level then
                 [ model.level.board
                     |> Dict.filter (\_ square -> not square.isWhite)
                     |> Dict.toList

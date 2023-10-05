@@ -257,7 +257,11 @@ findNextMove game =
 
 possibleMoves : { isYourTurn : Bool } -> Level -> List { from : ( Int, Int ), to : ( Int, Int ) }
 possibleMoves args game =
-    if isWon game || isLost game then
+    if
+        (args.isYourTurn && isWon game)
+            || (not args.isYourTurn && isKingBehindLine game)
+            || isLost game
+    then
         []
 
     else
@@ -275,19 +279,23 @@ possibleMoves args game =
                 )
 
 
-isWon : Level -> Bool
-isWon game =
-    (game.board
+isKingBehindLine : Level -> Bool
+isKingBehindLine level =
+    level.board
         |> Dict.filter
             (\( x, y ) square ->
                 (square.piece == King)
                     && square.isWhite
                     && (y == 0)
-                    && isSave { isWhite = True, pos = ( x, y ) } game
+                    && isSave { isWhite = True, pos = ( x, y ) } level
             )
         |> Dict.isEmpty
         |> not
-    )
+
+
+isWon : Level -> Bool
+isWon game =
+    isKingBehindLine game
         || (game.board
                 |> Dict.filter (\_ square -> not square.isWhite)
                 |> Dict.isEmpty

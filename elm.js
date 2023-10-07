@@ -7742,6 +7742,20 @@ var $author$project$Piece$name = function (piece) {
 			return 'Queen';
 	}
 };
+var $author$project$View$Level$name = function (level) {
+	switch (level) {
+		case 1:
+			return 'Dark Dungeon';
+		case 2:
+			return 'Slippy Sewers';
+		case 3:
+			return 'Kings Castle';
+		case 4:
+			return 'Queens Quarters';
+		default:
+			return 'The Throne Room';
+	}
+};
 var $Orasund$elm_layout$Layout$row = function (attrs) {
 	return $elm$html$Html$div(
 		_Utils_ap(
@@ -8376,7 +8390,7 @@ var $author$project$Main$view = function (model) {
 											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
 											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)')
 										]),
-									'Level ' + $elm$core$String$fromInt(model.levelCount)),
+									'Level ' + ($elm$core$String$fromInt(model.levelCount) + (': ' + $author$project$View$Level$name(model.levelCount)))),
 									A2(
 									$Orasund$elm_layout$Layout$text,
 									_List_fromArray(

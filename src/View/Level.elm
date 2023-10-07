@@ -162,3 +162,22 @@ toHtml args game =
                     |> Layout.row []
             )
         |> Layout.column []
+
+
+name : Int -> String
+name level =
+    case level of
+        1 ->
+            "Dark Dungeon"
+
+        2 ->
+            "Slippy Sewers"
+
+        3 ->
+            "Kings Castle"
+
+        4 ->
+            "Queens Quarters"
+
+        _ ->
+            "The Throne Room"

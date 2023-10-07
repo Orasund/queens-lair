@@ -358,6 +358,8 @@ view model =
         Nothing ->
             [ [ "Level "
                     ++ String.fromInt model.levelCount
+                    ++ ": "
+                    ++ View.Level.name model.levelCount
                     |> Layout.text
                         [ Html.Attributes.style "background-color" "var(--gray-color)"
                         , Html.Attributes.style "padding" "var(--small-space)"

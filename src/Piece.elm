@@ -59,7 +59,7 @@ movement piece =
             List.range 1 (Config.boardSize - 1)
                 |> List.concatMap
                     (\i ->
-                        [ ( 0, i ), ( i, 0 ) ]
+                        [ ( 0, i ), ( i, 0 ), ( -i, 0 ), ( 0, -i ) ]
                     )
                 |> Set.fromList
 
@@ -75,7 +75,7 @@ movement piece =
             List.range 1 (Config.boardSize - 1)
                 |> List.concatMap
                     (\i ->
-                        [ ( 0, i ), ( i, 0 ), ( i, i ), ( -i, i ), ( i, -i ), ( -i, -i ) ]
+                        [ ( 0, i ), ( i, 0 ), ( -i, 0 ), ( 0, -i ), ( i, i ), ( -i, i ), ( i, -i ), ( -i, -i ) ]
                     )
                 |> Set.fromList
 

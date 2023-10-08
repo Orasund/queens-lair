@@ -86,3 +86,28 @@ toImage attrs ( x, y ) =
         , sheetColumns = 8
         , sheetRows = 2
         }
+
+
+bigWhiteKing : List (Attribute msg) -> Html msg
+bigWhiteKing attrs =
+    toBigImage attrs ( 7, 1 )
+
+
+bigBlackQueen : List (Attribute msg) -> Html msg
+bigBlackQueen attrs =
+    toBigImage attrs ( 6, 0 )
+
+
+toBigImage : List (Attribute msg) -> ( Int, Int ) -> Html msg
+toBigImage attrs ( x, y ) =
+    Pixel.spriteImage
+        (Pixel.pixelated :: attrs)
+        { url = "assets/spritesheet.png"
+        , pos = ( x, y )
+        , width = Config.sqaureSize * 2
+        , height = Config.sqaureSize * 2
+        , spriteHeight = 16
+        , spriteWidth = 16
+        , sheetColumns = 8
+        , sheetRows = 2
+        }

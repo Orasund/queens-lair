@@ -171,12 +171,24 @@ name level =
             "Dark Dungeon"
 
         2 ->
-            "Slippy Sewers"
+            "Dark Dungeon"
 
         3 ->
-            "Kings Castle"
+            "Slippy Sewers"
 
         4 ->
+            "Slippy Sewers"
+
+        5 ->
+            "Kings Castle"
+
+        6 ->
+            "Kings Castle"
+
+        7 ->
+            "Queens Quarters"
+
+        8 ->
             "Queens Quarters"
 
         _ ->

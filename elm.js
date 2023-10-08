@@ -5877,6 +5877,7 @@ var $author$project$Action$EndMove = {$: 'EndMove'};
 var $author$project$Action$FindArtefact = function (a) {
 	return {$: 'FindArtefact', a: a};
 };
+var $author$project$Overlay$GameWon = {$: 'GameWon'};
 var $author$project$Overlay$ShopOverlay = function (a) {
 	return {$: 'ShopOverlay', a: a};
 };
@@ -6360,12 +6361,10 @@ var $elm$core$Dict$get = F2(
 	});
 var $author$project$Artefact$Bible = {$: 'Bible'};
 var $author$project$Artefact$Coconuts = {$: 'Coconuts'};
-var $author$project$Artefact$DowsingRod = {$: 'DowsingRod'};
 var $author$project$Artefact$IronThrone = {$: 'IronThrone'};
 var $author$project$Artefact$PocketMoney = {$: 'PocketMoney'};
-var $author$project$Artefact$TinSoldier = {$: 'TinSoldier'};
 var $author$project$Artefact$list = _List_fromArray(
-	[$author$project$Artefact$Coconuts, $author$project$Artefact$FingerPistol, $author$project$Artefact$IronThrone, $author$project$Artefact$DowsingRod, $author$project$Artefact$Bible, $author$project$Artefact$PocketMoney, $author$project$Artefact$TinSoldier]);
+	[$author$project$Artefact$Coconuts, $author$project$Artefact$FingerPistol, $author$project$Artefact$IronThrone, $author$project$Artefact$Bible, $author$project$Artefact$PocketMoney]);
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6404,14 +6403,10 @@ var $author$project$Artefact$name = function (item) {
 			return 'Finger Pistol';
 		case 'IronThrone':
 			return 'Iron Throne';
-		case 'DowsingRod':
-			return 'Dowsing Rod';
 		case 'Bible':
 			return 'Bible';
-		case 'PocketMoney':
-			return 'Pocket Money';
 		default:
-			return 'Tin Soldier';
+			return 'Pocket Money';
 	}
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6700,6 +6695,7 @@ var $author$project$Main$applyAction = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Config$chessValue = 10;
 var $Orasund$elm_game_ai_minimax$MinimaxSearch$Loosing = {$: 'Loosing'};
 var $Orasund$elm_game_ai_minimax$MinimaxSearch$Score = function (a) {
 	return {$: 'Score', a: a};
@@ -7299,10 +7295,6 @@ var $author$project$Action$PieceMovement = function (a) {
 var $author$project$Action$PlaceChest = function (a) {
 	return {$: 'PlaceChest', a: a};
 };
-var $author$project$Action$PlacePiece = function (a) {
-	return {$: 'PlacePiece', a: a};
-};
-var $author$project$Action$ToChest = {$: 'ToChest'};
 var $author$project$Action$fromArtefact = function (artefact) {
 	switch (artefact.$) {
 		case 'Coconuts':
@@ -7314,17 +7306,38 @@ var $author$project$Action$fromArtefact = function (artefact) {
 		case 'IronThrone':
 			return $author$project$Action$OverrideMovement(
 				$author$project$Action$PieceMovement($author$project$Piece$King));
-		case 'DowsingRod':
-			return $author$project$Action$OverrideMovement($author$project$Action$ToChest);
 		case 'Bible':
 			return $author$project$Action$OverrideMovement(
 				$author$project$Action$PieceMovement($author$project$Piece$Bishop));
-		case 'PocketMoney':
+		default:
 			return $author$project$Action$PlaceChest(
 				$author$project$Action$PlaceChest($author$project$Action$DoNothing));
-		default:
-			return $author$project$Action$PlacePiece($author$project$Piece$Pawn);
 	}
+};
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $elm$core$Set$size = function (_v0) {
+	var dict = _v0.a;
+	return $elm$core$Dict$size(dict);
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -7421,7 +7434,29 @@ var $author$project$Main$update = F2(
 						{seed: seed}),
 					$elm$core$Platform$Cmd$none);
 			case 'EndLevel':
-				return _Utils_Tuple2(
+				var score = model.score + (($author$project$Config$chessValue * $elm$core$Set$size(model.level.loot)) + $elm$core$List$sum(
+					A2(
+						$elm$core$List$map,
+						function (_v9) {
+							var square = _v9.b;
+							return $author$project$Piece$value(square.piece);
+						},
+						$elm$core$Dict$toList(
+							A2(
+								$elm$core$Dict$filter,
+								F2(
+									function (_v8, square) {
+										return !square.isWhite;
+									}),
+								model.level.board)))));
+				return (model.levelCount >= 8) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							overlay: $elm$core$Maybe$Just($author$project$Overlay$GameWon),
+							score: score
+						}),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					function (party) {
 						return _Utils_update(
 							model,
@@ -7429,21 +7464,7 @@ var $author$project$Main$update = F2(
 								overlay: $elm$core$Maybe$Just(
 									$author$project$Overlay$ShopOverlay(
 										{party: party})),
-								score: model.score + $elm$core$List$sum(
-									A2(
-										$elm$core$List$map,
-										function (_v9) {
-											var square = _v9.b;
-											return $author$project$Piece$value(square.piece);
-										},
-										$elm$core$Dict$toList(
-											A2(
-												$elm$core$Dict$filter,
-												F2(
-													function (_v8, square) {
-														return !square.isWhite;
-													}),
-												model.level.board))))
+								score: score
 							});
 					}(
 						A2(
@@ -7546,14 +7567,10 @@ var $author$project$Artefact$description = function (item) {
 			return 'Move one piece like a pawn';
 		case 'IronThrone':
 			return 'Move one piece like a king';
-		case 'DowsingRod':
-			return 'Move one piece to the chest';
 		case 'Bible':
 			return 'Move one piece like a bishop';
-		case 'PocketMoney':
-			return 'Spawn two chests';
 		default:
-			return 'Add a white pawn to the board';
+			return 'Spawn two chests';
 	}
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7726,6 +7743,168 @@ var $author$project$View$Overlay$foundArtefact = F2(
 						args.artefacts))
 				]));
 	});
+var $author$project$Pixel$pixelated = A2($elm$html$Html$Attributes$style, 'image-rendering', 'pixelated');
+var $author$project$Pixel$spriteImage = F2(
+	function (attrs, args) {
+		var scaleY = args.height / args.spriteHeight;
+		var scaleX = args.width / args.spriteWidth;
+		var _v0 = args.pos;
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$Attributes$style,
+						'width',
+						$elm$core$String$fromFloat(args.width) + 'px'),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'height',
+						$elm$core$String$fromFloat(args.height) + 'px'),
+						A2($elm$html$Html$Attributes$style, 'background-image', 'url(' + (args.url + ') ')),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'background-position',
+						$elm$core$String$fromFloat(((-args.spriteWidth) * scaleX) * x) + ('px ' + ($elm$core$String$fromFloat(((-args.spriteHeight) * scaleY) * y) + 'px'))),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'background-size',
+						$elm$core$String$fromFloat((args.spriteWidth * args.sheetColumns) * scaleX) + ('px ' + ($elm$core$String$fromFloat((args.spriteHeight * args.sheetRows) * scaleY) + 'px'))),
+						A2($elm$html$Html$Attributes$style, 'background-repeat', 'no-repeat')
+					]),
+				attrs),
+			_List_Nil);
+	});
+var $author$project$Config$sqaureSize = 80;
+var $author$project$View$Spritesheet$toBigImage = F2(
+	function (attrs, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$author$project$Pixel$spriteImage,
+			A2($elm$core$List$cons, $author$project$Pixel$pixelated, attrs),
+			{
+				height: $author$project$Config$sqaureSize * 2,
+				pos: _Utils_Tuple2(x, y),
+				sheetColumns: 8,
+				sheetRows: 2,
+				spriteHeight: 16,
+				spriteWidth: 16,
+				url: 'assets/spritesheet.png',
+				width: $author$project$Config$sqaureSize * 2
+			});
+	});
+var $author$project$View$Spritesheet$bigBlackQueen = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toBigImage,
+		attrs,
+		_Utils_Tuple2(6, 0));
+};
+var $author$project$View$Spritesheet$bigWhiteKing = function (attrs) {
+	return A2(
+		$author$project$View$Spritesheet$toBigImage,
+		attrs,
+		_Utils_Tuple2(7, 1));
+};
+var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$style, 'align-items', 'center');
+var $Orasund$elm_layout$Layout$centered = _List_fromArray(
+	[$Orasund$elm_layout$Layout$contentCentered, $Orasund$elm_layout$Layout$alignAtCenter]);
+var $author$project$View$Overlay$gameWon = function (args) {
+	return A2(
+		$Orasund$elm_layout$Layout$column,
+		_List_fromArray(
+			[
+				$Orasund$elm_layout$Layout$gap(32)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'relative')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$Orasund$elm_layout$Layout$el,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
+								A2($elm$html$Html$Attributes$style, 'padding-left', '100px'),
+								A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+							]),
+						A2($Orasund$elm_layout$Layout$text, _List_Nil, 'Give me back my throne!')),
+						$author$project$View$Spritesheet$bigWhiteKing(
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+								A2($elm$html$Html$Attributes$style, 'bottom', '-120px'),
+								A2($elm$html$Html$Attributes$style, 'left', '-30px')
+							]))
+					])),
+				A2(
+				$Orasund$elm_layout$Layout$column,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$Orasund$elm_layout$Layout$text,
+						_Utils_ap(
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'color', 'var(--primary-color)')
+								]),
+							$Orasund$elm_layout$Layout$centered),
+						'Score'),
+						A2(
+						$Orasund$elm_layout$Layout$text,
+						_Utils_ap(
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'color', 'var(--primary-color)'),
+									A2($elm$html$Html$Attributes$style, 'font-size', '128px')
+								]),
+							$Orasund$elm_layout$Layout$centered),
+						$elm$core$String$fromInt(args.score))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'relative')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$Orasund$elm_layout$Layout$el,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'padding', 'var(--space)'),
+								A2($elm$html$Html$Attributes$style, 'padding-right', '100px'),
+								A2($elm$html$Html$Attributes$style, 'background-color', 'var(--dark-gray-color)')
+							]),
+						A2($Orasund$elm_layout$Layout$text, _List_Nil, 'You wish, you just broke out of prison! But you may sleep im my bed tonight.')),
+						$author$project$View$Spritesheet$bigBlackQueen(
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+								A2($elm$html$Html$Attributes$style, 'top', '-100px'),
+								A2($elm$html$Html$Attributes$style, 'right', '-30px')
+							]))
+					])),
+				A2(
+				$Orasund$elm_layout$Layout$textButton,
+				_List_Nil,
+				{
+					label: 'Thanks for playing',
+					onPress: $elm$core$Maybe$Just(args.onRestart)
+				})
+			]));
+};
 var $author$project$Piece$name = function (piece) {
 	switch (piece.$) {
 		case 'King':
@@ -7747,10 +7926,18 @@ var $author$project$View$Level$name = function (level) {
 		case 1:
 			return 'Dark Dungeon';
 		case 2:
-			return 'Slippy Sewers';
+			return 'Dark Dungeon';
 		case 3:
-			return 'Kings Castle';
+			return 'Slippy Sewers';
 		case 4:
+			return 'Slippy Sewers';
+		case 5:
+			return 'Kings Castle';
+		case 6:
+			return 'Kings Castle';
+		case 7:
+			return 'Queens Quarters';
+		case 8:
 			return 'Queens Quarters';
 		default:
 			return 'The Throne Room';
@@ -7769,7 +7956,6 @@ var $Orasund$elm_layout$Layout$row = function (attrs) {
 };
 var $author$project$Config$screenMinWidth = 400;
 var $elm$html$Html$img = _VirtualDom_node('img');
-var $author$project$Pixel$pixelated = A2($elm$html$Html$Attributes$style, 'image-rendering', 'pixelated');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7851,41 +8037,6 @@ var $author$project$View$Artefact$toHtml = F2(
 				},
 				list));
 	});
-var $author$project$Pixel$spriteImage = F2(
-	function (attrs, args) {
-		var scaleY = args.height / args.spriteHeight;
-		var scaleX = args.width / args.spriteWidth;
-		var _v0 = args.pos;
-		var x = _v0.a;
-		var y = _v0.b;
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$Attributes$style,
-						'width',
-						$elm$core$String$fromFloat(args.width) + 'px'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'height',
-						$elm$core$String$fromFloat(args.height) + 'px'),
-						A2($elm$html$Html$Attributes$style, 'background-image', 'url(' + (args.url + ') ')),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'background-position',
-						$elm$core$String$fromFloat(((-args.spriteWidth) * scaleX) * x) + ('px ' + ($elm$core$String$fromFloat(((-args.spriteHeight) * scaleY) * y) + 'px'))),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'background-size',
-						$elm$core$String$fromFloat((args.spriteWidth * args.sheetColumns) * scaleX) + ('px ' + ($elm$core$String$fromFloat((args.spriteHeight * args.sheetRows) * scaleY) + 'px'))),
-						A2($elm$html$Html$Attributes$style, 'background-repeat', 'no-repeat')
-					]),
-				attrs),
-			_List_Nil);
-	});
-var $author$project$Config$sqaureSize = 80;
 var $author$project$View$Spritesheet$toImage = F2(
 	function (attrs, _v0) {
 		var x = _v0.a;
@@ -8234,7 +8385,6 @@ var $author$project$View$Level$toHtml = F2(
 var $author$project$Action$NextLevel = function (a) {
 	return {$: 'NextLevel', a: a};
 };
-var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$style, 'align-items', 'center');
 var $author$project$Config$maxPartyMembers = 4;
 var $author$project$Piece$promote = function (piece) {
 	switch (piece.$) {
@@ -8361,12 +8511,16 @@ var $author$project$Main$view = function (model) {
 								onCloseOverlay: $author$project$Main$CloseOverlay
 							},
 							artefact);
-					default:
+					case 'NewGame':
 						var _v1 = _v0.a;
 						return $author$project$View$Overlay$title(
 							{
 								onStart: $author$project$Main$CloseOverlay($author$project$Action$DoNothing)
 							});
+					default:
+						var _v2 = _v0.a;
+						return $author$project$View$Overlay$gameWon(
+							{onRestart: $author$project$Main$Restart, score: model.score});
 				}
 			} else {
 				return A2(
@@ -8420,37 +8574,60 @@ var $author$project$Main$view = function (model) {
 											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)'),
 											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)')
 										]),
-									A2(
-										$elm$core$List$map,
-										function (_v3) {
-											var square = _v3.b;
-											return A2(
-												$Orasund$elm_layout$Layout$row,
-												_List_fromArray(
-													[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
-												_List_fromArray(
-													[
-														A2(
-														$Orasund$elm_layout$Layout$text,
-														_List_Nil,
-														$author$project$Piece$name(square.piece)),
-														A2(
-														$Orasund$elm_layout$Layout$text,
-														_List_Nil,
-														function (n) {
-															return (n === 1) ? '1 Point' : ($elm$core$String$fromInt(n) + ' Points');
-														}(
-															$author$project$Piece$value(square.piece)))
-													]));
+									A3(
+										$elm$core$Basics$apR,
+										$elm$core$Set$size(model.level.loot),
+										function (n) {
+											return (!n) ? $elm$core$Basics$identity : $elm$core$List$cons(
+												A2(
+													$Orasund$elm_layout$Layout$row,
+													_List_fromArray(
+														[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
+													_List_fromArray(
+														[
+															A2(
+															$Orasund$elm_layout$Layout$text,
+															_List_Nil,
+															(n === 1) ? '1 Chest' : ($elm$core$String$fromInt(n) + ' Chests')),
+															A2(
+															$Orasund$elm_layout$Layout$text,
+															_List_Nil,
+															function (p) {
+																return (p === 1) ? '1 Point' : ($elm$core$String$fromInt(p) + ' Points');
+															}($author$project$Config$chessValue * n))
+														])));
 										},
-										$elm$core$Dict$toList(
-											A2(
-												$elm$core$Dict$filter,
-												F2(
-													function (_v2, square) {
-														return !square.isWhite;
-													}),
-												model.level.board)))),
+										A2(
+											$elm$core$List$map,
+											function (_v4) {
+												var square = _v4.b;
+												return A2(
+													$Orasund$elm_layout$Layout$row,
+													_List_fromArray(
+														[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
+													_List_fromArray(
+														[
+															A2(
+															$Orasund$elm_layout$Layout$text,
+															_List_Nil,
+															$author$project$Piece$name(square.piece)),
+															A2(
+															$Orasund$elm_layout$Layout$text,
+															_List_Nil,
+															function (n) {
+																return (n === 1) ? '1 Point' : ($elm$core$String$fromInt(n) + ' Points');
+															}(
+																$author$project$Piece$value(square.piece)))
+														]));
+											},
+											$elm$core$Dict$toList(
+												A2(
+													$elm$core$Dict$filter,
+													F2(
+														function (_v3, square) {
+															return !square.isWhite;
+														}),
+													model.level.board))))),
 									A2(
 									$Orasund$elm_layout$Layout$textButton,
 									_List_Nil,

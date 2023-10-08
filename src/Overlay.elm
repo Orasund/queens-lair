@@ -8,3 +8,4 @@ type Overlay
     = ShopOverlay { party : List Piece }
     | FoundArtefactOverlay Artefact
     | NewGame
+    | GameWon

@@ -8,6 +8,7 @@ import Html.Attributes
 import Layout
 import Pixel
 import View.Artefact
+import View.Spritesheet
 
 
 foundArtefact : { onCloseOverlay : Action -> msg, artefacts : List Artefact } -> Artefact -> Html msg
@@ -86,3 +87,54 @@ title args =
         }
     ]
         |> Layout.column [ Layout.gap 16 ]
+
+
+gameWon : { score : Int, onRestart : msg } -> Html msg
+gameWon args =
+    [ [ Layout.text [] "Give me back my throne!"
+            |> Layout.el
+                [ Html.Attributes.style "padding" "var(--space)"
+                , Html.Attributes.style "padding-left" "100px"
+                , Html.Attributes.style "background-color" "var(--dark-gray-color)"
+                ]
+      , View.Spritesheet.bigWhiteKing
+            [ Html.Attributes.style "position" "absolute"
+            , Html.Attributes.style "bottom" "-120px"
+            , Html.Attributes.style "left" "-30px"
+            ]
+      ]
+        |> Html.div [ Html.Attributes.style "position" "relative" ]
+    , [ "Score"
+            |> Layout.text
+                ([ Html.Attributes.style "color" "var(--primary-color)" ]
+                    ++ Layout.centered
+                )
+      , args.score
+            |> String.fromInt
+            |> Layout.text
+                ([ Html.Attributes.style "color" "var(--primary-color)"
+                 , Html.Attributes.style "font-size" "128px"
+                 ]
+                    ++ Layout.centered
+                )
+      ]
+        |> Layout.column []
+    , [ Layout.text [] "You wish, you just broke out of prison! But you may sleep im my bed tonight."
+            |> Layout.el
+                [ Html.Attributes.style "padding" "var(--space)"
+                , Html.Attributes.style "padding-right" "100px"
+                , Html.Attributes.style "background-color" "var(--dark-gray-color)"
+                ]
+      , View.Spritesheet.bigBlackQueen
+            [ Html.Attributes.style "position" "absolute"
+            , Html.Attributes.style "top" "-100px"
+            , Html.Attributes.style "right" "-30px"
+            ]
+      ]
+        |> Html.div [ Html.Attributes.style "position" "relative" ]
+    , Layout.textButton []
+        { label = "Thanks for playing"
+        , onPress = Just args.onRestart
+        }
+    ]
+        |> Layout.column [ Layout.gap 32 ]

@@ -303,24 +303,37 @@ update msg model =
             ( { model | seed = seed }, Cmd.none )
 
         EndLevel ->
-            ( model.level.board
-                |> Dict.filter (\_ square -> square.isWhite)
-                |> Dict.toList
-                |> List.map (\( _, { piece } ) -> piece)
-                |> (\party ->
-                        { model
-                            | overlay = ShopOverlay { party = party } |> Just
-                            , score =
-                                model.level.board
-                                    |> Dict.filter (\_ square -> not square.isWhite)
-                                    |> Dict.toList
-                                    |> List.map (\( _, square ) -> Piece.value square.piece)
-                                    |> List.sum
-                                    |> (+) model.score
-                        }
-                   )
-            , Cmd.none
-            )
+            let
+                score =
+                    model.level.board
+                        |> Dict.filter (\_ square -> not square.isWhite)
+                        |> Dict.toList
+                        |> List.map (\( _, square ) -> Piece.value square.piece)
+                        |> List.sum
+                        |> (+) (model.level.loot |> Set.size |> (*) Config.chessValue)
+                        |> (+) model.score
+            in
+            if model.levelCount >= 8 then
+                ( { model
+                    | overlay = Just GameWon
+                    , score = score
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model.level.board
+                    |> Dict.filter (\_ square -> square.isWhite)
+                    |> Dict.toList
+                    |> List.map (\( _, { piece } ) -> piece)
+                    |> (\party ->
+                            { model
+                                | overlay = ShopOverlay { party = party } |> Just
+                                , score = score
+                            }
+                       )
+                , Cmd.none
+                )
 
         Activate artefact ->
             applyAction (Action.fromArtefact artefact)
@@ -354,6 +367,12 @@ view model =
 
         Just NewGame ->
             View.Overlay.title { onStart = CloseOverlay DoNothing }
+
+        Just GameWon ->
+            View.Overlay.gameWon
+                { score = model.score
+                , onRestart = Restart
+                }
 
         Nothing ->
             [ [ "Level "
@@ -398,6 +417,34 @@ view model =
                             ]
                                 |> Layout.row [ Layout.contentWithSpaceBetween ]
                         )
+                    |> (Set.size model.level.loot
+                            |> (\n ->
+                                    if n == 0 then
+                                        identity
+
+                                    else
+                                        [ (if n == 1 then
+                                            "1 Chest"
+
+                                           else
+                                            String.fromInt n ++ " Chests"
+                                          )
+                                            |> Layout.text []
+                                        , Config.chessValue
+                                            * n
+                                            |> (\p ->
+                                                    if p == 1 then
+                                                        "1 Point"
+
+                                                    else
+                                                        String.fromInt p ++ " Points"
+                                               )
+                                            |> Layout.text []
+                                        ]
+                                            |> Layout.row [ Layout.contentWithSpaceBetween ]
+                                            |> (::)
+                               )
+                       )
                     |> Layout.column
                         [ Layout.gap 8
                         , Html.Attributes.style "padding" "var(--small-space)"

@@ -5,10 +5,13 @@ type Artefact
     = Coconuts
     | FingerPistol
     | IronThrone
-    | DowsingRod
+      --  | DowsingRod
     | Bible
     | PocketMoney
-    | TinSoldier
+
+
+
+--| TinSoldier
 
 
 list : List Artefact
@@ -16,10 +19,12 @@ list =
     [ Coconuts
     , FingerPistol
     , IronThrone
-    , DowsingRod
+
+    -- , DowsingRod
     , Bible
     , PocketMoney
-    , TinSoldier
+
+    --  , TinSoldier
     ]
 
 
@@ -35,17 +40,18 @@ name item =
         IronThrone ->
             "Iron Throne"
 
-        DowsingRod ->
-            "Dowsing Rod"
-
+        -- DowsingRod ->
+        --     "Dowsing Rod"
         Bible ->
             "Bible"
 
         PocketMoney ->
             "Pocket Money"
 
-        TinSoldier ->
-            "Tin Soldier"
+
+
+--  TinSoldier ->
+--      "Tin Soldier"
 
 
 description : Artefact -> String
@@ -60,14 +66,15 @@ description item =
         IronThrone ->
             "Move one piece like a king"
 
-        DowsingRod ->
-            "Move one piece to the chest"
-
+        --DowsingRod ->
+        --    "Move one piece to the chest"
         Bible ->
             "Move one piece like a bishop"
 
         PocketMoney ->
             "Spawn two chests"
 
-        TinSoldier ->
-            "Add a white pawn to the board"
+
+
+--  TinSoldier ->
+--      "Add a white pawn to the board"

@@ -41,9 +41,8 @@ fromArtefact artefact =
                 |> PieceMovement
                 |> OverrideMovement
 
-        DowsingRod ->
-            ToChest |> OverrideMovement
-
+        -- DowsingRod ->
+        --    ToChest |> OverrideMovement
         Bible ->
             Bishop
                 |> PieceMovement
@@ -52,5 +51,7 @@ fromArtefact artefact =
         PocketMoney ->
             PlaceChest (PlaceChest DoNothing)
 
-        TinSoldier ->
-            PlacePiece Pawn
+
+
+--TinSoldier ->
+--     PlacePiece Pawn

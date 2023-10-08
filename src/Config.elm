@@ -19,3 +19,7 @@ screenMinWidth =
 
 sqaureSize =
     80
+
+
+chessValue =
+    10

@@ -2,6 +2,7 @@ module Action exposing (..)
 
 import Artefact exposing (Artefact(..))
 import Piece exposing (Piece(..))
+import Settings exposing (Settings)
 
 
 type Action
@@ -16,6 +17,7 @@ type Action
     | FindArtefact ( Int, Int )
     | EndMove
     | DoNothing
+    | RestartGame Settings
 
 
 type Movement

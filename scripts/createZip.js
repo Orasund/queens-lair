@@ -1,6 +1,6 @@
 const zl = require("zip-lib");
 
-const OUTPUT = "Archive.zip"
+const OUTPUT = process.argv[2]
 
 const zip = new zl.Zip()
 zip.addFolder("assets", "assets")

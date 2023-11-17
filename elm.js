@@ -5245,10 +5245,6 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Main$GotSeed = function (a) {
 	return {$: 'GotSeed', a: a};
 };
-var $author$project$Piece$King = {$: 'King'};
-var $author$project$Overlay$NewGame = {$: 'NewGame'};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -5356,6 +5352,87 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$map3 = F4(
+	function (func, _v0, _v1, _v2) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v3 = genA(seed0);
+				var a = _v3.a;
+				var seed1 = _v3.b;
+				var _v4 = genB(seed1);
+				var b = _v4.a;
+				var seed2 = _v4.b;
+				var _v5 = genC(seed2);
+				var c = _v5.a;
+				var seed3 = _v5.b;
+				return _Utils_Tuple2(
+					A3(func, a, b, c),
+					seed3);
+			});
+	});
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
+	function (seed0) {
+		var makeIndependentSeed = F3(
+			function (state, b, c) {
+				return $elm$random$Random$next(
+					A2($elm$random$Random$Seed, state, (1 | (b ^ c)) >>> 0));
+			});
+		var gen = A2($elm$random$Random$int, 0, 4294967295);
+		return A2(
+			$elm$random$Random$step,
+			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
+			seed0);
+	});
+var $author$project$Piece$King = {$: 'King'};
+var $author$project$Overlay$NewGame = {$: 'NewGame'};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Piece$Pawn = {$: 'Pawn'};
 var $elm$random$Random$andThen = F2(
 	function (callback, _v0) {
@@ -5406,48 +5483,10 @@ var $elm$core$List$filterMap = F2(
 			xs);
 	});
 var $author$project$Config$boardSize = 4;
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
 };
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $elm$random$Random$map2 = F3(
 	function (func, _v0, _v1) {
 		var genA = _v0.a;
@@ -5469,9 +5508,6 @@ var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
 	});
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5485,23 +5521,24 @@ var $elm$core$Set$singleton = function (key) {
 	return $elm$core$Set$Set_elm_builtin(
 		A2($elm$core$Dict$singleton, key, _Utils_Tuple0));
 };
-var $author$project$Level$fromBoard = function (board) {
-	var randomPos = A3(
-		$elm$random$Random$map2,
-		$elm$core$Tuple$pair,
-		A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1),
-		A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1));
-	return A2(
-		$elm$random$Random$map,
-		function (loot) {
-			return {
-				board: board,
-				history: _List_Nil,
-				loot: $elm$core$Set$singleton(loot)
-			};
-		},
-		randomPos);
-};
+var $author$project$Level$fromBoard = F2(
+	function (settings, board) {
+		var randomPos = A3(
+			$elm$random$Random$map2,
+			$elm$core$Tuple$pair,
+			A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1),
+			A2($elm$random$Random$int, 0, $author$project$Config$boardSize - 1));
+		return A2(
+			$elm$random$Random$map,
+			function (loot) {
+				return {
+					board: board,
+					history: _List_Nil,
+					loot: settings.withChests ? $elm$core$Set$singleton(loot) : $elm$core$Set$empty
+				};
+			},
+			randomPos);
+	});
 var $elm$core$Dict$Red = {$: 'Red'};
 var $elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5689,7 +5726,9 @@ var $author$project$Level$fromPieces = function (args) {
 				return -$author$project$Piece$value(piece);
 			},
 			args.black));
-	return $author$project$Level$fromBoard(
+	return A2(
+		$author$project$Level$fromBoard,
+		args.settings,
 		$elm$core$Dict$fromList(
 			_Utils_ap(white, black)));
 };
@@ -5762,8 +5801,8 @@ var $elm$random$Random$weighted = F2(
 			A2($elm$random$Random$getByWeight, first, others),
 			A2($elm$random$Random$float, 0, total));
 	});
-var $author$project$Game$Generate$generateByLevel = F2(
-	function (lv, list) {
+var $author$project$Level$Generate$generateByLevel = F3(
+	function (lv, settings, list) {
 		var choose = F2(
 			function (remaining, black) {
 				return A2(
@@ -5788,7 +5827,7 @@ var $author$project$Game$Generate$generateByLevel = F2(
 			function (_v1) {
 				var black = _v1.black;
 				return $author$project$Level$fromPieces(
-					{black: black, white: list});
+					{black: black, settings: settings, white: list});
 			},
 			A3(
 				$elm$core$List$foldl,
@@ -5810,62 +5849,36 @@ var $author$project$Game$Generate$generateByLevel = F2(
 					{black: _List_Nil, remaining: lv * 2}),
 				A2($elm$core$List$range, 0, 3)));
 	});
-var $elm$random$Random$map3 = F4(
-	function (func, _v0, _v1, _v2) {
-		var genA = _v0.a;
-		var genB = _v1.a;
-		var genC = _v2.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v3 = genA(seed0);
-				var a = _v3.a;
-				var seed1 = _v3.b;
-				var _v4 = genB(seed1);
-				var b = _v4.a;
-				var seed2 = _v4.b;
-				var _v5 = genC(seed2);
-				var c = _v5.a;
-				var seed3 = _v5.b;
-				return _Utils_Tuple2(
-					A3(func, a, b, c),
-					seed3);
-			});
-	});
-var $elm$core$Bitwise$or = _Bitwise_or;
-var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
-	function (seed0) {
-		var makeIndependentSeed = F3(
-			function (state, b, c) {
-				return $elm$random$Random$next(
-					A2($elm$random$Random$Seed, state, (1 | (b ^ c)) >>> 0));
-			});
-		var gen = A2($elm$random$Random$int, 0, 4294967295);
-		return A2(
-			$elm$random$Random$step,
-			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
-			seed0);
-	});
-var $author$project$Main$init = function (_v0) {
+var $author$project$Main$initModel = function (settings) {
 	var party = _List_fromArray(
 		[$author$project$Piece$King]);
 	var lv = 1;
-	var _v1 = A2(
+	var _v0 = A2(
 		$elm$random$Random$step,
-		A2($author$project$Game$Generate$generateByLevel, lv, party),
+		A3($author$project$Level$Generate$generateByLevel, lv, settings, party),
 		$elm$random$Random$initialSeed(42));
-	var level = _v1.a;
-	var seed = _v1.b;
+	var level = _v0.a;
+	var seed = _v0.b;
+	return {
+		artefacts: $elm$core$Dict$empty,
+		level: level,
+		levelCount: lv,
+		lives: settings.withLives ? 3 : 1,
+		movementOverride: $elm$core$Maybe$Nothing,
+		overlay: $elm$core$Maybe$Just($author$project$Overlay$NewGame),
+		score: 0,
+		seed: seed,
+		selected: $elm$core$Maybe$Nothing,
+		settings: settings
+	};
+};
+var $author$project$Settings$classic = {withChests: true, withLives: false};
+var $author$project$Settings$modern = _Utils_update(
+	$author$project$Settings$classic,
+	{withLives: true});
+var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{
-			artefacts: $elm$core$Dict$empty,
-			level: level,
-			levelCount: lv,
-			movementOverride: $elm$core$Maybe$Nothing,
-			overlay: $elm$core$Maybe$Just($author$project$Overlay$NewGame),
-			score: 0,
-			seed: seed,
-			selected: $elm$core$Maybe$Nothing
-		},
+		$author$project$Main$initModel($author$project$Settings$modern),
 		A2($elm$random$Random$generate, $author$project$Main$GotSeed, $elm$random$Random$independentSeed));
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5878,6 +5891,7 @@ var $author$project$Action$FindArtefact = function (a) {
 	return {$: 'FindArtefact', a: a};
 };
 var $author$project$Overlay$GameWon = {$: 'GameWon'};
+var $author$project$Action$ResetLevel = {$: 'ResetLevel'};
 var $author$project$Overlay$ShopOverlay = function (a) {
 	return {$: 'ShopOverlay', a: a};
 };
@@ -6318,7 +6332,6 @@ var $elm$core$Dict$filter = F2(
 			$elm$core$Dict$empty,
 			dict);
 	});
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -6424,7 +6437,11 @@ var $author$project$Main$startLevel = F2(
 		var levelCount = model.levelCount + 1;
 		var _v0 = A2(
 			$elm$random$Random$step,
-			A2($author$project$Game$Generate$generateByLevel, levelCount, party),
+			A3(
+				$author$project$Level$Generate$generateByLevel,
+				levelCount,
+				model.settings,
+				A2($elm$core$List$member, $author$project$Piece$King, party) ? party : A2($elm$core$List$cons, $author$project$Piece$King, party)),
 			model.seed);
 		var level = _v0.a;
 		var seed = _v0.b;
@@ -6691,6 +6708,16 @@ var $author$project$Main$applyAction = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
+			case 'RestartGame':
+				var settings = action.a;
+				return _Utils_Tuple2(
+					function (m) {
+						return _Utils_update(
+							m,
+							{overlay: $elm$core$Maybe$Nothing});
+					}(
+						$author$project$Main$initModel(settings)),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -6777,7 +6804,9 @@ var $author$project$Piece$movement = function (piece) {
 						return _List_fromArray(
 							[
 								_Utils_Tuple2(0, i),
-								_Utils_Tuple2(i, 0)
+								_Utils_Tuple2(i, 0),
+								_Utils_Tuple2(-i, 0),
+								_Utils_Tuple2(0, -i)
 							]);
 					},
 					A2($elm$core$List$range, 1, $author$project$Config$boardSize - 1)));
@@ -6804,6 +6833,8 @@ var $author$project$Piece$movement = function (piece) {
 							[
 								_Utils_Tuple2(0, i),
 								_Utils_Tuple2(i, 0),
+								_Utils_Tuple2(-i, 0),
+								_Utils_Tuple2(0, -i),
 								_Utils_Tuple2(i, i),
 								_Utils_Tuple2(-i, i),
 								_Utils_Tuple2(i, -i),
@@ -7503,8 +7534,19 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{overlay: $elm$core$Maybe$Nothing}));
+			case 'LooseLive':
+				return (model.settings.withLives && (model.lives > 2)) ? A2(
+					$author$project$Main$applyAction,
+					$author$project$Action$ResetLevel,
+					_Utils_update(
+						model,
+						{lives: model.lives - 1})) : _Utils_Tuple2(
+					$author$project$Main$initModel(model.settings),
+					$elm$core$Platform$Cmd$none);
 			default:
-				return $author$project$Main$init(_Utils_Tuple0);
+				return _Utils_Tuple2(
+					$author$project$Main$initModel(model.settings),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$Activate = function (a) {
@@ -7514,7 +7556,11 @@ var $author$project$Main$CloseOverlay = function (a) {
 	return {$: 'CloseOverlay', a: a};
 };
 var $author$project$Main$EndLevel = {$: 'EndLevel'};
+var $author$project$Main$LooseLive = {$: 'LooseLive'};
 var $author$project$Main$Restart = {$: 'Restart'};
+var $author$project$Action$RestartGame = function (a) {
+	return {$: 'RestartGame', a: a};
+};
 var $author$project$Main$Select = function (a) {
 	return {$: 'Select', a: a};
 };
@@ -7853,11 +7899,9 @@ var $author$project$View$Overlay$gameWon = function (args) {
 					[
 						A2(
 						$Orasund$elm_layout$Layout$text,
-						_Utils_ap(
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'color', 'var(--primary-color)')
-								]),
+						A2(
+							$elm$core$List$cons,
+							A2($elm$html$Html$Attributes$style, 'color', 'var(--primary-color)'),
 							$Orasund$elm_layout$Layout$centered),
 						'Score'),
 						A2(
@@ -7955,7 +7999,20 @@ var $Orasund$elm_layout$Layout$row = function (attrs) {
 			attrs));
 };
 var $author$project$Config$screenMinWidth = 400;
+var $author$project$Settings$arcade = _Utils_update(
+	$author$project$Settings$classic,
+	{withChests: false});
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$img = _VirtualDom_node('img');
+var $author$project$Env$isPaid = true;
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7971,11 +8028,95 @@ var $elm$html$Html$Attributes$src = function (url) {
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var $author$project$View$Overlay$title = function (args) {
+	var heart = function (_v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$html$Html$img,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$src('assets/heart.png'),
+					$author$project$Pixel$pixelated,
+					A2(
+					$elm$html$Html$Attributes$style,
+					'width',
+					$elm$core$String$fromInt(16 * 2)),
+					A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'left',
+					$elm$core$String$fromInt(x) + 'px'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'bottom',
+					$elm$core$String$fromInt(y) + 'px')
+				]),
+			_List_Nil);
+	};
+	var disabledButton = F2(
+		function (a, content) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'relative')
+					]),
+				_Utils_ap(
+					_List_fromArray(
+						[
+							A2(
+							$Orasund$elm_layout$Layout$textButton,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$disabled(true),
+									A2($elm$html$Html$Attributes$style, 'width', '100%')
+								]),
+							{label: a.label, onPress: $elm$core$Maybe$Nothing}),
+							A2(
+							$elm$html$Html$img,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$src('assets/locked.png'),
+									$author$project$Pixel$pixelated,
+									A2(
+									$elm$html$Html$Attributes$style,
+									'width',
+									$elm$core$String$fromInt(16 * 4)),
+									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+									A2($elm$html$Html$Attributes$style, 'right', '-32px'),
+									A2($elm$html$Html$Attributes$style, 'top', '-16px')
+								]),
+							_List_Nil)
+						]),
+					content));
+		});
+	var button = F2(
+		function (a, content) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'relative')
+					]),
+				A2(
+					$elm$core$List$cons,
+					A2(
+						$Orasund$elm_layout$Layout$textButton,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'width', '100%')
+							]),
+						{
+							label: a.label,
+							onPress: $elm$core$Maybe$Just(a.onPress)
+						}),
+					content));
+		});
 	return A2(
 		$Orasund$elm_layout$Layout$column,
 		_List_fromArray(
 			[
-				$Orasund$elm_layout$Layout$gap(16)
+				A2($elm$html$Html$Attributes$style, 'gap', 'var(--big-space)')
 			]),
 		_List_fromArray(
 			[
@@ -8000,12 +8141,41 @@ var $author$project$View$Overlay$title = function (args) {
 					]),
 				A2($Orasund$elm_layout$Layout$text, _List_Nil, 'Get your king to the top of the board')),
 				A2(
-				$Orasund$elm_layout$Layout$textButton,
-				_List_Nil,
-				{
-					label: 'Start',
-					onPress: $elm$core$Maybe$Just(args.onStart)
-				})
+				$Orasund$elm_layout$Layout$column,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'gap', 'var(--space)')
+					]),
+				_List_fromArray(
+					[
+						$author$project$Env$isPaid ? A2(
+						button,
+						{
+							label: '3 Lives',
+							onPress: args.onStart($author$project$Settings$modern)
+						},
+						_List_Nil) : A2(
+						disabledButton,
+						{label: '3 Lives'},
+						_List_Nil),
+						A2(
+						button,
+						{
+							label: 'Classic',
+							onPress: args.onStart($author$project$Settings$classic)
+						},
+						_List_Nil),
+						$author$project$Env$isPaid ? A2(
+						button,
+						{
+							label: 'No Chests',
+							onPress: args.onStart($author$project$Settings$arcade)
+						},
+						_List_Nil) : A2(
+						disabledButton,
+						{label: 'No Chests'},
+						_List_Nil)
+					]))
 			]));
 };
 var $author$project$View$Artefact$toHtml = F2(
@@ -8515,7 +8685,10 @@ var $author$project$Main$view = function (model) {
 						var _v1 = _v0.a;
 						return $author$project$View$Overlay$title(
 							{
-								onStart: $author$project$Main$CloseOverlay($author$project$Action$DoNothing)
+								onStart: function (settings) {
+									return $author$project$Main$CloseOverlay(
+										$author$project$Action$RestartGame(settings));
+								}
 							});
 					default:
 						var _v2 = _v0.a;
@@ -8532,27 +8705,38 @@ var $author$project$Main$view = function (model) {
 					_List_fromArray(
 						[
 							A2(
-							$Orasund$elm_layout$Layout$row,
+							$Orasund$elm_layout$Layout$column,
 							_List_fromArray(
-								[$Orasund$elm_layout$Layout$contentWithSpaceBetween]),
+								[
+									A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
+									A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)'),
+									A2($elm$html$Html$Attributes$style, 'gap', 'var(--space)')
+								]),
 							_List_fromArray(
 								[
 									A2(
 									$Orasund$elm_layout$Layout$text,
 									_List_fromArray(
-										[
-											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
-											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)')
-										]),
+										[$Orasund$elm_layout$Layout$contentCentered]),
 									'Level ' + ($elm$core$String$fromInt(model.levelCount) + (': ' + $author$project$View$Level$name(model.levelCount)))),
 									A2(
-									$Orasund$elm_layout$Layout$text,
+									$Orasund$elm_layout$Layout$row,
 									_List_fromArray(
 										[
-											A2($elm$html$Html$Attributes$style, 'background-color', 'var(--gray-color)'),
-											A2($elm$html$Html$Attributes$style, 'padding', 'var(--small-space)')
+											$Orasund$elm_layout$Layout$gap(4),
+											$Orasund$elm_layout$Layout$contentWithSpaceBetween
 										]),
-									'Score ' + $elm$core$String$fromInt(model.score))
+									_List_fromArray(
+										[
+											A2(
+											$Orasund$elm_layout$Layout$text,
+											_List_Nil,
+											'Lives ' + $elm$core$String$fromInt(model.lives)),
+											A2(
+											$Orasund$elm_layout$Layout$text,
+											_List_Nil,
+											'Score ' + $elm$core$String$fromInt(model.score))
+										]))
 								])),
 							A2(
 							$author$project$View$Level$toHtml,
@@ -8643,7 +8827,7 @@ var $author$project$Main$view = function (model) {
 								]),
 							{
 								label: 'You died',
-								onPress: $elm$core$Maybe$Just($author$project$Main$Restart)
+								onPress: $elm$core$Maybe$Just($author$project$Main$LooseLive)
 							}) : A2(
 							$author$project$View$Artefact$toHtml,
 							{onActivate: $author$project$Main$Activate},

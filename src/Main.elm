@@ -5,16 +5,18 @@ import Artefact exposing (Artefact(..))
 import Browser
 import Config
 import Dict exposing (Dict)
-import Game.Generate
 import Html exposing (Html)
 import Html.Attributes
 import Layout
 import Level exposing (Level)
+import Level.Generate
 import Overlay exposing (Overlay(..))
 import Piece exposing (Piece(..))
+import Pixel
 import Process
 import Random exposing (Seed)
 import Set
+import Settings exposing (Settings)
 import Task
 import View.Artefact
 import View.Level
@@ -31,6 +33,8 @@ type alias Model =
     , seed : Seed
     , movementOverride : Maybe Movement
     , score : Int
+    , lives : Int
+    , settings : Settings
     }
 
 
@@ -41,11 +45,12 @@ type Msg
     | EndLevel
     | Activate Artefact
     | CloseOverlay Action
+    | LooseLive
     | Restart
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
+initModel : Settings -> Model
+initModel settings =
     let
         lv =
             1
@@ -55,20 +60,33 @@ init () =
 
         ( level, seed ) =
             Random.step
-                (Game.Generate.generateByLevel lv
+                (Level.Generate.generateByLevel lv
+                    settings
                     party
                 )
                 (Random.initialSeed 42)
     in
-    ( { level = level
-      , artefacts = Dict.empty
-      , selected = Nothing
-      , levelCount = lv
-      , overlay = Just NewGame
-      , seed = seed
-      , movementOverride = Nothing
-      , score = 0
-      }
+    { level = level
+    , artefacts = Dict.empty
+    , selected = Nothing
+    , levelCount = lv
+    , overlay = Just NewGame
+    , seed = seed
+    , movementOverride = Nothing
+    , score = 0
+    , lives =
+        if settings.withLives then
+            3
+
+        else
+            1
+    , settings = settings
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init () =
+    ( initModel Settings.modern
     , Random.generate GotSeed Random.independentSeed
     )
 
@@ -81,8 +99,14 @@ startLevel party model =
 
         ( level, seed ) =
             Random.step
-                (Game.Generate.generateByLevel levelCount
-                    party
+                (Level.Generate.generateByLevel levelCount
+                    model.settings
+                    (if List.member King party then
+                        party
+
+                     else
+                        King :: party
+                    )
                 )
                 model.seed
     in
@@ -229,6 +253,11 @@ applyAction action model =
                 [] ->
                     ( model, Cmd.none )
 
+        RestartGame settings ->
+            ( initModel settings |> (\m -> { m | overlay = Nothing })
+            , Cmd.none
+            )
+
         DoNothing ->
             ( model, Cmd.none )
 
@@ -345,8 +374,20 @@ update msg model =
             applyAction action
                 { model | overlay = Nothing }
 
+        LooseLive ->
+            if model.settings.withLives && model.lives > 2 then
+                applyAction ResetLevel
+                    { model | lives = model.lives - 1 }
+
+            else
+                ( initModel model.settings
+                , Cmd.none
+                )
+
         Restart ->
-            init ()
+            ( initModel model.settings
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
@@ -366,7 +407,11 @@ view model =
                 artefact
 
         Just NewGame ->
-            View.Overlay.title { onStart = CloseOverlay DoNothing }
+            View.Overlay.title
+                { onStart =
+                    \settings ->
+                        CloseOverlay (RestartGame settings)
+                }
 
         Just GameWon ->
             View.Overlay.gameWon
@@ -379,18 +424,41 @@ view model =
                     ++ String.fromInt model.levelCount
                     ++ ": "
                     ++ View.Level.name model.levelCount
-                    |> Layout.text
-                        [ Html.Attributes.style "background-color" "var(--gray-color)"
-                        , Html.Attributes.style "padding" "var(--small-space)"
-                        ]
-              , "Score "
+                    |> Layout.text [ Layout.contentCentered ]
+              , [ "Lives "
+                    ++ String.fromInt model.lives
+                    |> Layout.text []
+                , "Score "
                     ++ String.fromInt model.score
-                    |> Layout.text
-                        [ Html.Attributes.style "background-color" "var(--gray-color)"
-                        , Html.Attributes.style "padding" "var(--small-space)"
+                    |> Layout.text []
+                ]
+                    |> Layout.row
+                        [ Layout.gap 4
+                        , Layout.contentWithSpaceBetween
                         ]
+
+              {--Html.img
+                    [ Html.Attributes.src "assets/small_heart.png"
+                    , Pixel.pixelated
+                    , Html.Attributes.style "width" (30 |> String.fromInt)
+                    , Html.Attributes.style "height" (30 |> String.fromInt)
+
+                    -- , Html.Attributes.style "position" "absolute"
+                    --, Html.Attributes.style "left" (String.fromInt x ++ "px")
+                    --, Html.Attributes.style "bottom" (String.fromInt y ++ "px")
+                    ]
+                    []
+                    |> List.repeat model.lives
+                    |> Layout.row
+                        [ Layout.gap 5
+                        , Html.Attributes.style "align-items" "end"
+                        ]--}
               ]
-                |> Layout.row [ Layout.contentWithSpaceBetween ]
+                |> Layout.column
+                    [ Html.Attributes.style "background-color" "var(--gray-color)"
+                    , Html.Attributes.style "padding" "var(--small-space)"
+                    , Html.Attributes.style "gap" "var(--space)"
+                    ]
             , View.Level.toHtml
                 { selected = model.selected
                 , onSelect = Select
@@ -462,7 +530,7 @@ view model =
                     [ Html.Attributes.style "background-color" "var(--red-color)"
                     ]
                     { label = "You died"
-                    , onPress = Just Restart
+                    , onPress = Just LooseLive
                     }
 
               else

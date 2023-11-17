@@ -73,6 +73,11 @@ button:active {
     filter: brightness(0.75);
 }
 
+button:disabled {
+    background-color: var(--gray-color);
+    color: black;
+}
+
 /***************************************************
  * UTILITY CLASSES
  ***************************************************/

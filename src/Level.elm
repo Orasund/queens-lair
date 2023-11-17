@@ -6,6 +6,7 @@ import MinimaxSearch exposing (Evaluation(..))
 import Piece exposing (Piece(..))
 import Random exposing (Generator)
 import Set exposing (Set)
+import Settings exposing (Settings)
 import Square exposing (Square)
 
 
@@ -16,13 +17,16 @@ type alias Level =
     }
 
 
-new : Generator Level
-new =
+new : Settings -> Generator Level
+new settings =
     fromPieces
-        { white = [ King ], black = [ King ] }
+        { white = [ King ]
+        , black = [ King ]
+        , settings = settings
+        }
 
 
-fromPieces : { white : List Piece, black : List Piece } -> Generator Level
+fromPieces : { white : List Piece, black : List Piece, settings : Settings } -> Generator Level
 fromPieces args =
     let
         white =
@@ -62,11 +66,11 @@ fromPieces args =
     white
         ++ black
         |> Dict.fromList
-        |> fromBoard
+        |> fromBoard args.settings
 
 
-fromBoard : Dict ( Int, Int ) Square -> Generator Level
-fromBoard board =
+fromBoard : Settings -> Dict ( Int, Int ) Square -> Generator Level
+fromBoard settings board =
     let
         randomPos =
             Random.map2 Tuple.pair
@@ -78,7 +82,12 @@ fromBoard board =
             (\loot ->
                 { board = board
                 , history = []
-                , loot = Set.singleton loot
+                , loot =
+                    if settings.withChests then
+                        Set.singleton loot
+
+                    else
+                        Set.empty
                 }
             )
 

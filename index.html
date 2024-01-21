@@ -4,10 +4,12 @@
     <link rel="stylesheet" href="assets/main.css">
     <title>Queens Lair</title>
     <script src="elm.js"></script>
+    <!--<script type="module" src="assets/js/sound.js"></script>-->
     <link rel="manifest" href="/queens-lair/manifest.json" />
     <link rel="canonical" href="https://orasund.github.io/queens-lair/" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="preload" as="image" href="/assets/spritesheet.png">
+    <link rel="preload" as="image" href="assets/spritesheet.png">
+    <script type="module" src="assets/js/index.js"></script>
     <meta name="viewport" content="user-scalable=no,width=400">
     </meta>
 
@@ -15,17 +17,6 @@
 
 <body>
     <main></main>
-    <script>
-        var app = Elm.Main.init({ node: document.querySelector('main') })
-
-        if (typeof navigator.serviceWorker !== 'undefined') {
-            navigator.serviceWorker
-                .register('/queens-lair/service_worker.js',
-                    { scope: '/queens-lair/' })
-                .then(function () { console.log("Service Worker Registered"); });
-        }
-        // you can use ports and stuff here
-    </script>
 </body>
 
 </html>

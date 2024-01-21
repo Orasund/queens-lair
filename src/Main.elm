@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Action exposing (Action(..), Movement)
 import Artefact exposing (Artefact(..))
@@ -12,7 +12,6 @@ import Level exposing (Level)
 import Level.Generate
 import Overlay exposing (Overlay(..))
 import Piece exposing (Piece(..))
-import Pixel
 import Process
 import Random exposing (Seed)
 import Set
@@ -22,6 +21,9 @@ import View.Artefact
 import View.Level
 import View.Overlay
 import View.Shop
+
+
+port playTheme : () -> Cmd msg
 
 
 type alias Model =
@@ -255,7 +257,7 @@ applyAction action model =
 
         RestartGame settings ->
             ( initModel settings |> (\m -> { m | overlay = Nothing })
-            , Cmd.none
+            , playTheme ()
             )
 
         DoNothing ->

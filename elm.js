@@ -6425,6 +6425,12 @@ var $author$project$Artefact$name = function (item) {
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Basics$not = _Basics_not;
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Main$playTheme = _Platform_outgoingPort(
+	'playTheme',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -6717,7 +6723,7 @@ var $author$project$Main$applyAction = F2(
 							{overlay: $elm$core$Maybe$Nothing});
 					}(
 						$author$project$Main$initModel(settings)),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Main$playTheme(_Utils_Tuple0));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
